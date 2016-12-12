@@ -4,7 +4,10 @@ import java.time.LocalDateTime;
 
 public class MouseWait extends MouseAction
 {
-	private long waitTime;				// Wait time in nano-seconds
+	/**
+	 * Wait time in nanoseconds
+	 */
+	private long waitTime;
 	
 	/**
 	 * Main constructor for the class that initializes the wait time.
@@ -18,8 +21,8 @@ public class MouseWait extends MouseAction
 	}
 	
 	/**
-	 * Returns the wait time in nano-seconds.
-	 * @return Returns the wait time in nano-seconds.
+	 * Returns the wait time for this action.
+	 * @return Returns the wait time in nanoseconds
 	 */
 	public long getWaitTime()
 	{
@@ -28,7 +31,7 @@ public class MouseWait extends MouseAction
 	
 	/**
 	 * Updates/stores the waitTime for this action.
-	 * @param waitTime Wait time in nano-seconds. Must be greater or equal to 0.
+	 * @param waitTime Wait time in nanoseconds. Must be greater or equal to 0.
 	 */
 	public void setWaitTime(long waitTime) throws IllegalArgumentException
 	{

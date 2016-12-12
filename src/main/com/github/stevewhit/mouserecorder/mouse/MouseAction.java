@@ -13,7 +13,7 @@ public class MouseAction
 	 * Main constructor for this class.
 	 * @param actionDateTime The {@link LocalDateTime} stored by this action.
 	 */
-	public MouseAction(LocalDateTime actionDateTime)
+	public MouseAction(LocalDateTime actionDateTime) throws IllegalArgumentException
 	{
 		if (actionDateTime == null)
 			throw new IllegalArgumentException("Cannot set actionDateTime to a null value.");
