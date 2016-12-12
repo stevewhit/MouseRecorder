@@ -43,11 +43,6 @@ public class MouseAction
 		actionId = new BigInteger(actionDateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSSSSS")));
 	}
 	
-	public void newtest()
-	{
-		
-	}
-	
 	/**
 	 * Returns the actionId of the action.
 	 * @return The actionId of the action as an Integer in the format yyyyMMddHHmmssSSSSSSSSS
