@@ -56,7 +56,7 @@ public class MouseActionTest
 	@Test
 	public void testGetTimeToString()
 	{
-		assertEquals(actionWithValidDateTime.getTimeToString(), "05:27:51:000500830");
+		assertEquals(actionWithValidDateTime.getTimeFormattedString(), "05:27:51:000500830");
 	}
 	
 	@Test
@@ -68,7 +68,7 @@ public class MouseActionTest
 	@Test
 	public void testGetDateToString()
 	{
-		String dateString = actionWithValidDateTime.getDateToString();
+		String dateString = actionWithValidDateTime.getDateFormattedString();
 		
 		assertEquals(dateString, "12/09/2016");
 	}
@@ -76,6 +76,6 @@ public class MouseActionTest
 	@Test
 	public void testToString()
 	{
-		assertEquals(actionWithValidDateTime.goString(), "12/09/2016_05:27:51:000500830");
+		assertEquals(actionWithValidDateTime.toString(), "12/09/2016_05:27:51:000500830");
 	}
 }

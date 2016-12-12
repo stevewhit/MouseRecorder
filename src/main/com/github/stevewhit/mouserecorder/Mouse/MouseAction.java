@@ -38,7 +38,7 @@ public abstract class MouseAction
 	 * Returns the {@link LocalTime} of the action as a formatted string.
 	 * @return Returns the {@link LocalTime} of the action in the following string format: HH:mm:ss:SSSSSSSSS
 	 */
-	public String getTimeToString()
+	public String getTimeFormattedString()
 	{
 		return _actionDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss:SSSSSSSSS"));
 	}
@@ -56,7 +56,7 @@ public abstract class MouseAction
 	 * Returns the {@link LocalDate} of the action as a formatted string.
 	 * @return Returns the {@link LocalDate} of the action in the following string format: MM/dd/yyyy
 	 */
-	public String getDateToString()
+	public String getDateFormattedString()
 	{
 		return _actionDateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
 	}
@@ -65,8 +65,8 @@ public abstract class MouseAction
 	 * Returns the {@link LocalDateTime} of the action as a formatted string.
 	 * @return Returns the {@link LocalDateTime} of the action in the following string format: HH:mm:ss:SSSSSSSSS_MM/dd/yyyy
 	 */
-	public String goString()
+	public String toString()
 	{
-		return String.join("_", getDateToString(), getTimeToString());
+		return String.join("_", getDateFormattedString(), getTimeFormattedString());
 	}
 }
