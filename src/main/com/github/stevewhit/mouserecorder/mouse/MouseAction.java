@@ -1,96 +1,113 @@
 package com.github.stevewhit.mouserecorder.mouse;
 
+import java.math.BigInteger;
 import java.time.*;
 import java.time.format.*;
 
-import com.github.stevewhit.mouserecorder.mouse.exceptions.MouseActionException;
-import com.github.stevewhit.mouserecorder.mouse.exceptions.VariableNotInitializedException;
-
-public abstract class MouseAction
+public class MouseAction
 {
-	private LocalDateTime _actionDateTime;
+	private LocalDateTime actionDateTime;
+	private BigInteger actionId;
+	
+	/**
+	 * Main constructor for this class.
+	 * @param actionDateTime The {@link LocalDateTime} stored by this action.
+	 */
+	public MouseAction(LocalDateTime actionDateTime)
+	{
+		if (actionDateTime == null)
+			throw new IllegalArgumentException("Cannot set actionDateTime to a null value.");
+		
+		setDateTime(actionDateTime);
+	}
 	
 	/**
 	 * Sets the {@link LocalDateTime} for the action.
 	 * @param actionDateTime the {@link LocalDateTime} stored by this action.
 	 */
-	public void setDateTime(LocalDateTime actionDateTime) throws IllegalArgumentException
+	private void setDateTime(LocalDateTime actionDateTime) throws IllegalArgumentException
 	{
 		if (actionDateTime == null)
 			throw new IllegalArgumentException("Cannot set actionDateTime to a null value.");
 		
-		this._actionDateTime = actionDateTime;
+		this.actionDateTime = actionDateTime;
+		
+		updateActionId();
+	}
+
+	/**
+	 * Generates a new action id of the action by combining various parts of the dateTime.
+	 */
+	private void updateActionId()
+	{
+		actionId = new BigInteger(actionDateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSSSSS")));
+	}
+	
+	public void newtest()
+	{
+		
+	}
+	
+	/**
+	 * Returns the actionId of the action.
+	 * @return The actionId of the action as an Integer in the format yyyyMMddHHmmssSSSSSSSSS
+	 */
+	public BigInteger getActionId()
+	{
+		return this.actionId;
 	}
 	
 	/**
 	 * Returns the {@link LocalDateTime} of the action.
 	 * @return Returns the {@link LocalDateTime} of the action.
 	 */
-	public LocalDateTime getDateTime() throws VariableNotInitializedException
+	public LocalDateTime getDateTime()
 	{
-		if (_actionDateTime == null)
-			throw new VariableNotInitializedException("DateTime associated with this mouse action is null.");
-		
-		return this._actionDateTime;
+		return this.actionDateTime;
 	}
 	
 	/**
 	 * Returns the {@link LocalTime} portion of the {@link LocalDateTime} for the action.
 	 * @return Returns the {@link LocalTime} of the action.
 	 */
-	public LocalTime getTime() throws VariableNotInitializedException
+	public LocalTime getTime()
 	{
-		if (_actionDateTime == null)
-			throw new VariableNotInitializedException("DateTime associated with this mouse action is null.");
-		
-		return _actionDateTime.toLocalTime();
+		return actionDateTime.toLocalTime();
 	}
 	
 	/**
 	 * Returns the {@link LocalTime} of the action as a formatted string.
 	 * @return Returns the {@link LocalTime} of the action in the following string format: HH:mm:ss:SSSSSSSSS
 	 */
-	public String getTimeFormattedString() throws VariableNotInitializedException
+	public String getTimeFormattedString()
 	{
-		if (_actionDateTime == null)
-			throw new VariableNotInitializedException("DateTime associated with this mouse action is null.");
-		
-		return _actionDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss:SSSSSSSSS"));
+		return actionDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss:SSSSSSSSS"));
 	}
 	
 	/**
 	 * Returns the {@link LocalDate} portion of the {@link LocalDateTime} stored by the action.
 	 * @return {@link LocalDate} stored by the action.
 	 */
-	public LocalDate getDate() throws VariableNotInitializedException
+	public LocalDate getDate()
 	{
-		if (_actionDateTime == null)
-			throw new VariableNotInitializedException("DateTime associated with this mouse action is null.");
-		
-		return _actionDateTime.toLocalDate();
+		return actionDateTime.toLocalDate();
 	}
 	
 	/**
 	 * Returns the {@link LocalDate} of the action as a formatted string.
 	 * @return Returns the {@link LocalDate} of the action in the following string format: MM/dd/yyyy
 	 */
-	public String getDateFormattedString() throws VariableNotInitializedException
+	public String getDateFormattedString()
 	{
-		if (_actionDateTime == null)
-			throw new VariableNotInitializedException("DateTime associated with this mouse action is null.");
-		
-		return _actionDateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+		return actionDateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
 	}
 	
 	/**
 	 * Returns the {@link LocalDateTime} of the action as a formatted string.
 	 * @return Returns the {@link LocalDateTime} of the action in the following string format: HH:mm:ss:SSSSSSSSS_MM/dd/yyyy
 	 */
-	public String getDateTimeString() throws VariableNotInitializedException
+	public String getDateTimeString()
 	{
-		if (_actionDateTime == null)
-			throw new VariableNotInitializedException("DateTime associated with this mouse action is null.");
-		
 		return String.join("_", getDateFormattedString(), getTimeFormattedString());
 	}
 }

@@ -6,20 +6,8 @@ import java.time.*;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
-import com.github.stevewhit.mouserecorder.mouse.MouseAction;
-import com.github.stevewhit.mouserecorder.mouse.exceptions.MouseActionException;
-import com.github.stevewhit.mouserecorder.mouse.exceptions.VariableNotInitializedException;
-
 public class MouseActionTest
 {
-	public class MouseActionInstanceTest extends MouseAction
-	{
-		public MouseActionInstanceTest()
-		{
-			// Used for testing purposes only.
-		}
-	}
-	
 	MouseAction actionWithValidDateTime;
 	
 	LocalDate date;
@@ -33,84 +21,66 @@ public class MouseActionTest
 		time = LocalTime.of(5, 27, 51, 500830);
 		dateTime = LocalDateTime.of(date, time);
 		
-		actionWithValidDateTime = new MouseActionInstanceTest();
-		actionWithValidDateTime.setDateTime(dateTime);
+		actionWithValidDateTime = new MouseAction(dateTime);
 	}
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 	
-	@Test
-	public void testGetDateTime() throws VariableNotInitializedException
+	@Test 
+	public void testMouseActionValidDateTime()
 	{
 		assertEquals(actionWithValidDateTime.getDateTime(), dateTime);
-		
-		expectedException.expect(VariableNotInitializedException.class);
-		MouseAction tempAction = new MouseActionInstanceTest();
-		tempAction.getDateTime();
+		assertEquals(actionWithValidDateTime.getActionId().toString(), "20161209052751000500830");
 	}
 	
-	@Test
-	public void testSetDateTime() throws IllegalArgumentException, VariableNotInitializedException
+	@Test 
+	public void testMouseActionInvalidDateTime()
 	{
-		MouseAction action = new MouseActionInstanceTest();		
-		action.setDateTime(dateTime);
-	
-		assertEquals(action.getDateTime(), dateTime);
-		
 		expectedException.expect(IllegalArgumentException.class);
-		MouseAction tempAction = new MouseActionInstanceTest();
-		tempAction.setDateTime(null);
+		MouseAction invalidMouseAction = new MouseAction(null);
+	}
+	
+	@Test 
+	public void testGetActionId()
+	{
+		assertEquals(actionWithValidDateTime.getActionId().toString(), "20161209052751000500830");
 	}
 	
 	@Test
-	public void testGetTime() throws VariableNotInitializedException
+	public void testGetDateTime()
+	{
+		assertEquals(actionWithValidDateTime.getDateTime(), dateTime);
+	}
+	
+	@Test
+	public void testGetTime()
 	{
 		assertEquals(actionWithValidDateTime.getTime(), time);
-		
-		expectedException.expect(VariableNotInitializedException.class);
-		MouseAction tempAction = new MouseActionInstanceTest();
-		tempAction.getTime();
 	}
 	
 	@Test
-	public void testGetTimeFormattedString() throws VariableNotInitializedException
+	public void testGetTimeFormattedString()
 	{
 		assertEquals(actionWithValidDateTime.getTimeFormattedString(), "05:27:51:000500830");
-	
-		expectedException.expect(VariableNotInitializedException.class);
-		MouseAction tempAction = new MouseActionInstanceTest();
-		tempAction.getTimeFormattedString();
 	}
 	
 	@Test
-	public void testGetDate() throws VariableNotInitializedException
+	public void testGetDate()
 	{
 		assertEquals(actionWithValidDateTime.getDate(), date);
-		
-		expectedException.expect(VariableNotInitializedException.class);
-		MouseAction tempAction = new MouseActionInstanceTest();
-		tempAction.getDate();
 	}
 	
 	@Test
-	public void testGetDateFormattedString() throws VariableNotInitializedException
+	public void testGetDateFormattedString()
 	{
 		String expectedDateString = actionWithValidDateTime.getDateFormattedString();
 		assertEquals(expectedDateString, "12/09/2016");
-		
-		expectedException.expect(VariableNotInitializedException.class);
-		MouseAction tempAction = new MouseActionInstanceTest();
-		tempAction.getDateFormattedString();
 	}
 	
 	@Test
-	public void testGetDateTimeString() throws VariableNotInitializedException
+	public void testGetDateTimeString()
 	{
 		assertEquals(actionWithValidDateTime.getDateTimeString(), "12/09/2016_05:27:51:000500830");
-		
-		expectedException.expect(VariableNotInitializedException.class);
-		MouseAction tempAction = new MouseActionInstanceTest();
-		tempAction.getDateTimeString();
 	}
 }
