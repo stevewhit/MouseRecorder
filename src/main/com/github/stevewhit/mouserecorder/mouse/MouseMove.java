@@ -57,7 +57,7 @@ public class MouseMove extends MouseAction
 	 * @param mousePath Path of pixel coordinates {@see Point2D}
 	 * @throws IllegalArgumentException
 	 */
-	public void setMousePath(List<Pixel> mousePath) throws IllegalArgumentException
+	private void setMousePath(List<Pixel> mousePath) throws IllegalArgumentException
 	{
 		if (mousePath == null || mousePath.size() <= 1)
 			throw new IllegalArgumentException("Passed mouse path must not be null, empty, or only contain one point when creating a new mouse path.");

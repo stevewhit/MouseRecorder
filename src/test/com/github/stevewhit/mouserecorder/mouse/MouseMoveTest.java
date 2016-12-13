@@ -83,16 +83,6 @@ public class MouseMoveTest
 	}
 	
 	@Test
-	public void testSetMousePath()
-	{
-		expectedException.expect(IllegalArgumentException.class);
-		MouseMove validMM = new MouseMove(new Pixel(new PixelCoordinate2D(10,15)), new Pixel(new PixelCoordinate2D(10,17)));
-		validMM.setMousePath(mouseMovements);
-		
-		assertEquals(validMM.getMousePath(), mouseMovements);
-	}
-	
-	@Test
 	public void testGetStartingPoint()
 	{
 		assertEquals(moveValid.getStartingPoint(), mouseMovements.get(0));
