@@ -79,8 +79,8 @@ public class MouseActionTest
 	}
 	
 	@Test
-	public void testGetDateTimeString()
+	public void testToString()
 	{
-		assertEquals(actionWithValidDateTime.getDateTimeString(), "12/09/2016_05:27:51:000500830");
+		assertEquals(actionWithValidDateTime.toString(), "Created: 12/09/2016_05:27:51:000500830");
 	}
 }

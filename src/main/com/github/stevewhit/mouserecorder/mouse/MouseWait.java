@@ -40,4 +40,19 @@ public class MouseWait extends MouseAction
 		
 		this.waitTime = waitTime;
 	}
+
+	/**
+	 * Returns the wait details of this instance as well as the creation information.
+	 * @return Returns a formatted string detailing the waitTime and creation time details.
+	 */
+	public String getDetails()
+	{
+		return String.format("%1s --> %2s", this.toString(), super.toString());
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("Waiting: %1dns", waitTime);
+	}
 }

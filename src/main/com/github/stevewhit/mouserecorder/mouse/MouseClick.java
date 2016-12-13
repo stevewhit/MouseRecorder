@@ -79,4 +79,10 @@ public class MouseClick extends MouseAction
 	{
 		return this.clickHoldTime;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("%1s click and hold %1dns", mouseButton, clickHoldTime);
+	}
 }

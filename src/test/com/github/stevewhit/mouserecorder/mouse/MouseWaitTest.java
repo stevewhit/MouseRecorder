@@ -19,7 +19,7 @@ public class MouseWaitTest
 	public void setup()
 	{
 		waitTime = 123456789;
-		dateTime = LocalDateTime.now();
+		dateTime = LocalDateTime.of(2016, 12, 13, 11, 36, 12, 123456789);
 		
 		validMouseWait = new MouseWait(waitTime);
 	}
@@ -64,4 +64,9 @@ public class MouseWaitTest
 		assertEquals(tempMouseWait.getWaitTime(), 987654321);
 	}
 	
+	@Test
+	public void testToString()
+	{
+		assertEquals(validMouseWait.toString(), "Waiting: 123456789ns");
+	}
 }

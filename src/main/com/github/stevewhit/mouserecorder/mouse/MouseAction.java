@@ -101,8 +101,9 @@ public class MouseAction
 	 * Returns the {@link LocalDateTime} of the action as a formatted string.
 	 * @return Returns the {@link LocalDateTime} of the action in the following string format: HH:mm:ss:SSSSSSSSS_MM/dd/yyyy
 	 */
-	public String getDateTimeString()
+	@Override
+	public String toString()
 	{
-		return String.join("_", getDateFormattedString(), getTimeFormattedString());
+		return String.format("Created: %1s_%2s", getDateFormattedString(), getTimeFormattedString());
 	}
 }

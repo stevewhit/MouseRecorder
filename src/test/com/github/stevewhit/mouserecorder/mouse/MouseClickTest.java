@@ -97,4 +97,10 @@ public class MouseClickTest
 	{
 		assertEquals(click.getClickHoldTime(), holdTime);
 	}
+	
+	@Test
+	public void testToString()
+	{
+		assertEquals(click.toString(), "Left click and hold 123456789453643333ns");
+	}
 }
