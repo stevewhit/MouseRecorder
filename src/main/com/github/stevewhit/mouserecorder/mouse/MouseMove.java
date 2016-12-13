@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.stevewhit.mouserecorder.monitor.Pixel;
+
 public class MouseMove extends MouseAction
 {
 	/**
 	 * The defined coordinate path movements for the given mouse move.
 	 */
-	private List<Point2D> mousePath;
+	private List<Pixel> mousePath;
 	
 	/**
 	 * Variable that establishes the max distance between any two consecutive pixel coordinates for a given move.
@@ -20,10 +22,10 @@ public class MouseMove extends MouseAction
 	
 	/**
 	 * Constructor that takes a pre-defined mouse path.
-	 * @param mousePath Path of 2D pixel coordinates {@link Point2D} 
+	 * @param mousePath Path of 2D pixels {@link Point2D} 
 	 * @throws IllegalArgumentException
 	 */
-	public MouseMove(List<Point2D> mousePath) throws IllegalArgumentException
+	public MouseMove(List<Pixel> mousePath) throws IllegalArgumentException
 	{
 		super(LocalDateTime.now());
 		
@@ -36,16 +38,16 @@ public class MouseMove extends MouseAction
 	 * @param endPixelCoord Ending pixel coordinate {@link Point2D}
 	 * @throws IllegalArgumentException
 	 */
-	public MouseMove(Point2D startPixelCoord, Point2D endPixelCoord) throws IllegalArgumentException
+	public MouseMove(Pixel startPixel, Pixel endPixel) throws IllegalArgumentException
 	{
-		this(Arrays.asList(startPixelCoord, endPixelCoord));
+		this(Arrays.asList(startPixel, endPixel));
 	}
 	
 	/**
 	 * Returns the mouse path associated with this MouseMove.
 	 * @return Returns a list of {@link Point2D} pixel coordinates representing a mousePath.
 	 */
-	public List<Point2D> getMousePath()
+	public List<Pixel> getMousePath()
 	{
 		return this.mousePath;
 	}
@@ -55,7 +57,7 @@ public class MouseMove extends MouseAction
 	 * @param mousePath Path of pixel coordinates {@see Point2D}
 	 * @throws IllegalArgumentException
 	 */
-	public void setMousePath(List<Point2D> mousePath) throws IllegalArgumentException
+	public void setMousePath(List<Pixel> mousePath) throws IllegalArgumentException
 	{
 		if (mousePath == null || mousePath.size() <= 1)
 			throw new IllegalArgumentException("Passed mouse path must not be null, empty, or only contain one point when creating a new mouse path.");
@@ -77,32 +79,36 @@ public class MouseMove extends MouseAction
 	 * @return Returns true if the given path is valid. Returns false if path is not valid.
 	 * @throws IllegalArgumentException
 	 */
-	private Boolean pathHasCorrectPixelDistances(List<Point2D> mousePath) throws IllegalArgumentException
+	private boolean pathHasCorrectPixelDistances(List<Pixel> mousePath) throws IllegalArgumentException
 	{
 		if (mousePath == null || mousePath.size() <= 1)
 			throw new IllegalArgumentException("Passed mouse path must not be null, empty, or only contain one point when creating a new mouse path.");
 		
-		Point2D lastPoint = null;
+		Pixel lastPixel = null;
 		
-		for (Point2D pixelPoint : mousePath)
+		for (Pixel currentPixel : mousePath)
 		{
-			if (pixelPoint == null)
-				throw new IllegalArgumentException("Invalid point found.");
+			if (currentPixel == null)
+			{
+				throw new IllegalArgumentException("Invalid pixel found.");
+			}
 			
-			if (lastPoint == null)
-				lastPoint = new Point2D.Double(pixelPoint.getX(), pixelPoint.getY());
+			if (lastPixel == null)
+			{
+				lastPixel = new Pixel(currentPixel.getPixelCoordinate2D());
+			}
 			
 			else
 			{
 				// Compare X and Y values to determine pixel distances.
-				if (Math.abs(pixelPoint.getX() - lastPoint.getX()) > maxPixelDistancePerMove || 
-					Math.abs(pixelPoint.getY() - lastPoint.getY()) > maxPixelDistancePerMove)
+				if (Math.abs(currentPixel.getPixelCoordinate2D().getX() - lastPixel.getPixelCoordinate2D().getX()) > maxPixelDistancePerMove || 
+					Math.abs(currentPixel.getPixelCoordinate2D().getY() - lastPixel.getPixelCoordinate2D().getY()) > maxPixelDistancePerMove)
 				{
 					return false;
 				}
 				else
 				{
-					lastPoint = pixelPoint;
+					lastPixel = currentPixel;
 				}
 			}
 		}
@@ -115,12 +121,12 @@ public class MouseMove extends MouseAction
 	 * @return Returns the first/starting coordinate from the movement path {@link Point2D}
 	 * @throws IllegalStateException
 	 */
-	public Point2D getStartingPoint() throws IllegalStateException
+	public Pixel getStartingPoint() throws IllegalStateException
 	{
-		if (mousePath == null || mousePath.size() <= 1)
+		if (this.mousePath == null || this.mousePath.size() <= 1)
 			throw new IllegalStateException("Mouse path needs to be defined and populated before extracting any points");
 		
-		return mousePath.get(0);
+		return this.mousePath.get(0);
 	}
 	
 	/**
@@ -128,11 +134,44 @@ public class MouseMove extends MouseAction
 	 * @return Returns the last/ending coordinate from the movement path {@link Point2D}
 	 * @throws IllegalStateException
 	 */
-	public Point2D getEndingPoint() throws IllegalStateException
+	public Pixel getEndingPoint() throws IllegalStateException
 	{
-		if (mousePath == null || mousePath.size() <= 1)
+		if (this.mousePath == null || this.mousePath.size() <= 1)
 			throw new IllegalStateException("Mouse path needs to be defined and populated before extracting any points");
 		
-		return mousePath.get(mousePath.size() - 1);
+		return this.mousePath.get(this.mousePath.size() - 1);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("Moving: %1s --> %2s", getStartingPoint().toString(), getEndingPoint().toString());
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
