@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 import java.awt.geom.Point2D;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class PixelCoordinate2DTest
 {
@@ -22,6 +24,9 @@ public class PixelCoordinate2DTest
 		pixelCoord = new PixelCoordinate2D(x, y);
 	}
 	
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+	
 	@Test
 	public void testGetX()
 	{
@@ -35,16 +40,6 @@ public class PixelCoordinate2DTest
 	}
 	
 	@Test
-	public void testSetLocationDoubleDouble()
-	{
-		PixelCoordinate2D tempPixelCoord = new PixelCoordinate2D(x, y);
-		tempPixelCoord.setLocation(y, x);
-		
-		assertTrue(tempPixelCoord.getX() == y);
-		assertTrue(tempPixelCoord.getY() == x);
-	}
-	
-	@Test
 	public void testPixelCoordinate2D()
 	{
 		PixelCoordinate2D tempPixelCoord = new PixelCoordinate2D(x, y);
@@ -55,6 +50,72 @@ public class PixelCoordinate2DTest
 	@Test
 	public void testToString()
 	{
-		assertEquals(pixelCoord.toString(), "(X=-50, Y=70)");
+		assertEquals(pixelCoord.toString(), "(-50,70)");
+	}
+	
+	@Test
+	public void testEqualsSelf()
+	{
+		PixelCoordinate2D pixelCoordMatch = pixelCoord;
+		
+		assertTrue(pixelCoord.equals(pixelCoordMatch));
+	}
+	
+	@Test
+	public void testEqualsNullObj()
+	{
+		assertFalse(pixelCoord.equals(null));
+	}
+	
+	@Test
+	public void testEqualsDifClass()
+	{
+		assertFalse(pixelCoord.equals(new String("NotEqual")));
+	}
+	
+	@Test
+	public void testEqualsDifVariables()
+	{
+		PixelCoordinate2D pixelCoordDif = new PixelCoordinate2D(-50, 71);
+		assertFalse(pixelCoord.equals(pixelCoordDif));
+	}
+	
+	@Test
+	public void testEqualsSameVariables()
+	{
+		PixelCoordinate2D pixelCoordDif = new PixelCoordinate2D(-50, 70);
+		assertTrue(pixelCoord.equals(pixelCoordDif));
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

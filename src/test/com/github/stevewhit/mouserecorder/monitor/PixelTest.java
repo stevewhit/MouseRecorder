@@ -29,24 +29,6 @@ public class PixelTest
 	}
 	
 	@Test
-	public void testSetCoordinate2DValid()
-	{
-		Pixel tempPixel = new Pixel(new PixelCoordinate2D(10, 20));
-		tempPixel.setCoordinate2D(coordinate);
-		
-		assertEquals(tempPixel.getPixelCoordinate2D(), coordinate);
-	}
-	
-	@Test
-	public void testSetCoordinate2DNull()
-	{
-		expectedException.expect(IllegalArgumentException.class);
-		Pixel tempPixel = new Pixel(new PixelCoordinate2D(10, 20));
-		
-		tempPixel.setCoordinate2D(null);
-	}
-	
-	@Test
 	public void testGetPixelCoordinate2D()
 	{
 		assertEquals(pixelValid.getPixelCoordinate2D(), coordinate);
@@ -55,6 +37,41 @@ public class PixelTest
 	@Test
 	public void testToString()
 	{
-		assertEquals(pixelValid.toString(), "(X=-50, Y=35)");
+		assertEquals(pixelValid.toString(), "(-50,35)");
+	}
+	
+	@Test
+	public void testEqualsSelf()
+	{
+		Pixel pixelMatch = pixelValid;
+		
+		assertTrue(pixelValid.equals(pixelMatch));
+	}
+	
+	@Test
+	public void testEqualsNullObj()
+	{
+		assertFalse(pixelValid.equals(null));
+	}
+	
+	@Test
+	public void testEqualsDifClass()
+	{
+		assertFalse(pixelValid.equals(new String("NotEqual")));
+	}
+	
+	@Test
+	public void testEqualsDifVariables()
+	{
+		Pixel pixelDif = new Pixel(new PixelCoordinate2D(-50, 36));
+		
+		assertFalse(pixelValid.equals(pixelDif));
+	}
+	
+	@Test
+	public void testEqualsSameVariables()
+	{
+		Pixel pixelSame =new Pixel( new PixelCoordinate2D(-50, 35));
+		assertTrue(pixelValid.equals(pixelSame));
 	}
 }

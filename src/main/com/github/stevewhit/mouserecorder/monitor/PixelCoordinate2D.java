@@ -1,5 +1,7 @@
 package com.github.stevewhit.mouserecorder.monitor;
 
+import java.util.Objects;
+
 public class PixelCoordinate2D
 {
 	private int x;
@@ -38,15 +40,30 @@ public class PixelCoordinate2D
 	 * @param x - the new X coordinate of this coordinate2D
 	 * @param y - the new Y coordinate of this coordinate2D
 	 */
-	public void setLocation(int x, int y)
+	private void setLocation(int x, int y)
 	{
 		this.x = x;
 		this.y = y;
 	}
 	
 	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		
+		PixelCoordinate2D pixelCoord = (PixelCoordinate2D) obj;
+		
+		return Objects.equals(x, pixelCoord.x) && Objects.equals(y, pixelCoord.y);
+	}
+	
+	@Override
 	public String toString()
 	{
-		return String.format("(X=%1d, Y=%2d)", x, y);
+		return String.format("(%1d,%2d)", x, y);
 	}
 }

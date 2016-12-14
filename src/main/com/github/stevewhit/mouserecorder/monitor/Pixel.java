@@ -1,5 +1,7 @@
 package com.github.stevewhit.mouserecorder.monitor;
 
+import java.util.Objects;
+
 /**
  * Represents a resolution's computer pixel. 
  * @author Steve
@@ -28,7 +30,7 @@ public class Pixel
 	 * @param coordinate2D - The 2D coordinate for this pixel. {@link PixelCoordinate2D}
 	 * @throws IllegalArgumentException if the 2d coordinate is null.
 	 */
-	public void setCoordinate2D(PixelCoordinate2D coordinate2D) throws IllegalArgumentException
+	private void setCoordinate2D(PixelCoordinate2D coordinate2D) throws IllegalArgumentException
 	{
 		if (coordinate2D == null)
 			throw new IllegalArgumentException("Cannot set a null coordinate value.");
@@ -46,8 +48,23 @@ public class Pixel
 	}
 	
 	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		
+		Pixel  pixel = (Pixel) obj;
+		
+		return Objects.equals(pixel.getPixelCoordinate2D(), coordinate2D);
+	}
+	
+	@Override
 	public String toString()
 	{
-		return coordinate2D.toString();
+		return String.format("%1s", coordinate2D.toString());
 	}
 }
