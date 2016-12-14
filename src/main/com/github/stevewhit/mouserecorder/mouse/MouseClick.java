@@ -2,6 +2,8 @@ package com.github.stevewhit.mouserecorder.mouse;
 
 import java.time.LocalDateTime;
 
+import com.github.stevewhit.mouserecorder.monitor.Pixel;
+
 public class MouseClick extends MouseAction
 {
 	/**
@@ -21,6 +23,11 @@ public class MouseClick extends MouseAction
 	private MouseButton mouseButton;
 	
 	/**
+	 * The pixel information where the click action is performed.
+	 */
+	private Pixel pixelClicked;
+	
+	/**
 	 * How long the mouse button is held before being released in nanoseconds.
 	 */
 	private long clickHoldTime;
@@ -28,13 +35,15 @@ public class MouseClick extends MouseAction
 	/**
 	 * Default constructor that sets up the {@link MouseClick} with a button and hold time.
 	 * @param button The mouse button that is pressed while performing the *click* action.
+	 * @param pixelClicked The pixel information that is clicked.
 	 * @param clickHoldTime The time in milliseconds that the button is pressed before releasing.
 	 */
-	public MouseClick(MouseButton button, long clickHoldTime) throws IllegalArgumentException
+	public MouseClick(MouseButton button, Pixel pixelClicked, long clickHoldTime) throws IllegalArgumentException
 	{
 		super (LocalDateTime.now());
 		
 		setMouseButton(button);
+		setPixelClicked(pixelClicked);
 		setClickHoldTime(clickHoldTime);
 	}
 	
@@ -42,7 +51,7 @@ public class MouseClick extends MouseAction
 	 * Updates the button that is pressed during the *click* action.
 	 * @param button The mouse button that is pressed while performing the *click* action.
 	 */
-	public void setMouseButton(MouseButton button) throws IllegalArgumentException
+	private void setMouseButton(MouseButton button) throws IllegalArgumentException
 	{
 		if (button == null)
 			throw new IllegalArgumentException("Mouse button must not be null.");
@@ -60,10 +69,31 @@ public class MouseClick extends MouseAction
 	}
 	
 	/**
+	 * Updates the pixel that is clicked during the click action.
+	 * @param pixelClicked - The pixel information regarding the pixel that is clicked.
+	 */
+	private void setPixelClicked(Pixel pixelClicked)
+	{
+		if(pixelClicked == null)
+			throw new IllegalArgumentException("Pixel clicked must not be null");
+		
+		this.pixelClicked = pixelClicked;
+	}
+	
+	/**
+	 * Returns the pixel that is clicked.
+	 * @return Returns the pixel information that is clicked.
+	 */
+	public Pixel getPixelClicked()
+	{
+		return this.pixelClicked;
+	}
+	
+	/**
 	 * Updates the time the mouse button is pressed before releasing.
 	 * @param clickHoldTime The time in nanoseconds that the button is pressed before releasing.
 	 */
-	public void setClickHoldTime(long clickHoldTime) throws IllegalArgumentException
+	private void setClickHoldTime(long clickHoldTime) throws IllegalArgumentException
 	{
 		if (clickHoldTime < 0)
 			throw new IllegalArgumentException("Hold time must be at least 0 milliseconds.");
@@ -83,6 +113,6 @@ public class MouseClick extends MouseAction
 	@Override
 	public String toString()
 	{
-		return String.format("%1s click and hold %1dns", mouseButton, clickHoldTime);
+		return String.format("%1s click %2s, hold %3dns", mouseButton, pixelClicked.toString(), clickHoldTime);
 	}
 }
