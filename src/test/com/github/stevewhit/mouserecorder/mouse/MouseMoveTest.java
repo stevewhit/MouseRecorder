@@ -36,7 +36,7 @@ public class MouseMoveTest
 	@Test
 	public void testToString()
 	{
-		assertEquals(moveValid.toString(), "Moving: (X=10, Y=15) --> (X=13, Y=16)");
+		assertEquals(moveValid.toString(), "Moving: (10,15) --> (13,16)");
 	}
 	
 	@Test
@@ -83,16 +83,16 @@ public class MouseMoveTest
 	}
 	
 	@Test
-	public void testGetStartingPoint()
+	public void testGetStartPixel()
 	{
-		assertEquals(moveValid.getStartingPoint(), mouseMovements.get(0));
+		assertEquals(moveValid.getStartPixel(), mouseMovements.get(0));
 	}
 	
 	@Test
-	public void testGetEndingPoint()
+	public void testGetEndPixel()
 	{
 		int lastIndex = mouseMovements.size() - 1;
-		assertEquals(moveValid.getEndingPoint(), mouseMovements.get(lastIndex));
+		assertEquals(moveValid.getEndPixel(), mouseMovements.get(lastIndex));
 	}
 	
 }

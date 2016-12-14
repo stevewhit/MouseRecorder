@@ -20,7 +20,7 @@ public class MouseAction
 		
 		setDateTime(actionDateTime);
 	}
-	
+
 	/**
 	 * Sets the {@link LocalDateTime} for the action.
 	 * @param actionDateTime the {@link LocalDateTime} stored by this action.
@@ -32,13 +32,22 @@ public class MouseAction
 		
 		this.actionDateTime = actionDateTime;
 		
-		updateActionId();
+		setActionId();
 	}
 
 	/**
+	 * Returns the {@link LocalDateTime} of the action.
+	 * @return Returns the {@link LocalDateTime} of the action.
+	 */
+	public LocalDateTime getDateTime()
+	{
+		return this.actionDateTime;
+	}
+	
+	/**
 	 * Generates a new action id of the action by combining various parts of the dateTime.
 	 */
-	private void updateActionId()
+	private void setActionId()
 	{
 		actionId = new BigInteger(actionDateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSSSSS")));
 	}
@@ -50,15 +59,6 @@ public class MouseAction
 	public BigInteger getActionId()
 	{
 		return this.actionId;
-	}
-	
-	/**
-	 * Returns the {@link LocalDateTime} of the action.
-	 * @return Returns the {@link LocalDateTime} of the action.
-	 */
-	public LocalDateTime getDateTime()
-	{
-		return this.actionDateTime;
 	}
 	
 	/**
@@ -97,10 +97,6 @@ public class MouseAction
 		return actionDateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
 	}
 	
-	/**
-	 * Returns the {@link LocalDateTime} of the action as a formatted string.
-	 * @return Returns the {@link LocalDateTime} of the action in the following string format: HH:mm:ss:SSSSSSSSS_MM/dd/yyyy
-	 */
 	@Override
 	public String toString()
 	{

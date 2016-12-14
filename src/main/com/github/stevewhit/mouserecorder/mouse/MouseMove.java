@@ -121,7 +121,7 @@ public class MouseMove extends MouseAction
 	 * @return Returns the first/starting coordinate from the movement path {@link Point2D}
 	 * @throws IllegalStateException
 	 */
-	public Pixel getStartingPoint() throws IllegalStateException
+	public Pixel getStartPixel() throws IllegalStateException
 	{
 		if (this.mousePath == null || this.mousePath.size() <= 1)
 			throw new IllegalStateException("Mouse path needs to be defined and populated before extracting any points");
@@ -134,7 +134,7 @@ public class MouseMove extends MouseAction
 	 * @return Returns the last/ending coordinate from the movement path {@link Point2D}
 	 * @throws IllegalStateException
 	 */
-	public Pixel getEndingPoint() throws IllegalStateException
+	public Pixel getEndPixel() throws IllegalStateException
 	{
 		if (this.mousePath == null || this.mousePath.size() <= 1)
 			throw new IllegalStateException("Mouse path needs to be defined and populated before extracting any points");
@@ -145,7 +145,7 @@ public class MouseMove extends MouseAction
 	@Override
 	public String toString()
 	{
-		return String.format("Moving: %1s --> %2s", getStartingPoint().toString(), getEndingPoint().toString());
+		return String.format("Moving: %1s --> %2s", getStartPixel().toString(), getEndPixel().toString());
 	}
 }
 
