@@ -22,8 +22,8 @@ public class MouseMove extends MouseAction
 	
 	/**
 	 * Constructor that takes a pre-defined mouse path.
-	 * @param mousePath Path of 2D pixels {@link Point2D} 
-	 * @throws IllegalArgumentException
+	 * @param mousePath Path of 2D pixels {@link Pixel} 
+	 * @throws IllegalArgumentException - Throws if supplied with an invalid mousePath.
 	 */
 	public MouseMove(List<Pixel> mousePath) throws IllegalArgumentException
 	{
@@ -34,9 +34,9 @@ public class MouseMove extends MouseAction
 	
 	/**
 	 * Constructor that takes a start and end coordinate.
-	 * @param startPixelCoord Starting pixel coordinate {@link Point2D}
-	 * @param endPixelCoord Ending pixel coordinate {@link Point2D}
-	 * @throws IllegalArgumentException
+	 * @param startPixel Starting pixel {@link Pixel}
+	 * @param endPixel Ending pixel {@link Pixel}
+	 * @throws IllegalArgumentException - Throws if start or end pixels make an invalid movement path.
 	 */
 	public MouseMove(Pixel startPixel, Pixel endPixel) throws IllegalArgumentException
 	{
@@ -54,7 +54,7 @@ public class MouseMove extends MouseAction
 	
 	/**
 	 * Updates the mouse path given a pre-defined mouse path.
-	 * @param mousePath Path of pixel coordinates {@see Point2D}
+	 * @param mousePath Path of pixels for the move {@see Pixel}
 	 * @throws IllegalArgumentException
 	 */
 	private void setMousePath(List<Pixel> mousePath) throws IllegalArgumentException
@@ -62,7 +62,7 @@ public class MouseMove extends MouseAction
 		if (mousePath == null || mousePath.size() <= 1)
 			throw new IllegalArgumentException("Passed mouse path must not be null, empty, or only contain one point when creating a new mouse path.");
 		
-		if (pathHasCorrectPixelDistances(mousePath))
+		if (isValidMove(mousePath))
 		{
 			this.mousePath = mousePath;
 		}
@@ -79,7 +79,7 @@ public class MouseMove extends MouseAction
 	 * @return Returns true if the given path is valid. Returns false if path is not valid.
 	 * @throws IllegalArgumentException
 	 */
-	private boolean pathHasCorrectPixelDistances(List<Pixel> mousePath) throws IllegalArgumentException
+	private boolean isValidMove(List<Pixel> mousePath) throws IllegalArgumentException
 	{
 		if (mousePath == null || mousePath.size() <= 1)
 			throw new IllegalArgumentException("Passed mouse path must not be null, empty, or only contain one point when creating a new mouse path.");
@@ -119,7 +119,7 @@ public class MouseMove extends MouseAction
 	/**
 	 * Returns the first/starting coordinate from the movement path.
 	 * @return Returns the first/starting coordinate from the movement path {@link Point2D}
-	 * @throws IllegalStateException
+	 * @throws IllegalStateException - Throws if mousePath is null of has less than 2 items in it.
 	 */
 	public Pixel getStartPixel() throws IllegalStateException
 	{
@@ -132,7 +132,7 @@ public class MouseMove extends MouseAction
 	/**
 	 * Returns the last/ending coordinate from the movement path.
 	 * @return Returns the last/ending coordinate from the movement path {@link Point2D}
-	 * @throws IllegalStateException
+	 * @throws IllegalStateException - Throws if mousePath is null of has less than 2 items in it.
 	 */
 	public Pixel getEndPixel() throws IllegalStateException
 	{
