@@ -3,7 +3,7 @@ package com.github.stevewhit.mouserecorder.monitor;
 import java.awt.Dimension;
 
 /**
- * Used to represent the 2D coordinate of any given pixel in a monitor's resolution. Note, (0,0) starts in the top left corner.
+ * Used to represent the 2D coordinate of any given pixel in a monitor's screen. Note, (0,0) starts in the top left corner.
  * @author Steve Whitmire (swhit114@gmail.com)
  *
  */
@@ -20,13 +20,7 @@ public final class PixelCoordinate2D
 	 * Note, (0,0) starts in the top-left corner.
 	 */
 	private int y;
-		
-	/**
-	 * The screen resolution 2D dimensions. 
-	 * Not a mandatory field.
-	 */
-	private Dimension screenResolution;
-	
+			
 	/**
 	 * Constructor used to set the X and Y values of the Pixel.
 	 * @param x The X value of the pixel.
@@ -35,34 +29,15 @@ public final class PixelCoordinate2D
 	 */
 	protected PixelCoordinate2D(int x, int y) throws IllegalArgumentException
 	{
-		this(x, y, null);
-	}
-	
-	/**
-	 * Constructor used to set the X and Y values of the Pixel and the screen resolution.
-	 * @param x The X value of the pixel.
-	 * @param y The Y value of the pixel.
-	 * @param screenResolution The screen resolution 2D dimensions.
-	 * @throws IllegalArgumentException Throws if either the X or Y values are less than 0 or if the screen resolution is null.
-	 */
-	protected PixelCoordinate2D(int x, int y, Dimension screenResolution) throws IllegalArgumentException
-	{
 		try
 		{
 			setX(x);
 			setY(y);
-			setScreenResolution(screenResolution);
-			
-			if (!isValidCoord())
-			{
-				throw new IllegalArgumentException("This coordinate doesn't work with the resolution.");
-			}
 		}
 		catch(IllegalArgumentException ex)
 		{
-			x = 0;
-			y = 0;
-			screenResolution = null;
+			this.x = 0;
+			this.y = 0;
 			
 			throw new IllegalArgumentException("PixelCoordinate2D could not be created ==> " + ex.getMessage());
 		}
@@ -87,31 +62,28 @@ public final class PixelCoordinate2D
 	}
     
     /**
-     * Verifies the coordinate by identifying that both X and Y values are >= 0 and (if applicable) verifies the pixel coordinate is inside the resolution.
+     * Verifies the coordinate by identifying that both X and Y values are >= 0.
      * @return Returns true of the coordinate is valid. Otherwise, false.
      */
     public boolean isValidCoord()
     {
-    	// Check X, Y, and Resolution.
-    	// If resolution is null, don't use it as a comparison tool.
-    	return  (y >= 0) && 
-    			(x >= 0) && 
-    			(screenResolution == null) ? true : isInsideResolution();
+    	// Check X, Y values are >= 0
+    	return  (y >= 0) && (x >= 0);
     }
     
     /**
-     * Checks to see if this coordinate is inside the screen resolution it was initialized with.
-     * @return Returns true if the pixel coordinate is inside the resolution, otherwise false.
+     * Checks to see if this coordinate is inside the given screen dimensions.
+     * @return Returns true if the pixel coordinate is inside the dimensions, otherwise false;
      */
-    public boolean isInsideResolution()
+    public boolean isInsideScreenDimensions(Dimension screenDimensions)
     {
-    	if (screenResolution == null)
+    	if (screenDimensions == null)
     	{
-    		return false;
+    		throw new IllegalArgumentException("Screen dimensions cannot be null.");
     	}
     	
-    	return (y >= 0 && y <= screenResolution.getHeight() + 1) &&
-    		   (x >= 0 && x <= screenResolution.getWidth() + 1);
+    	return (y >= 0 && y <= screenDimensions.getHeight()) &&
+    		   (x >= 0 && x <= screenDimensions.getWidth());
     }
         
     /**
@@ -161,15 +133,6 @@ public final class PixelCoordinate2D
 		return String.format("(%1$d, %2$d)", x, y);
 	}
 
-    /**
-     * Returns the screen resolution that this pixel is part of.
-     * @return Returns the screen resolution of the screen as a dimension.
-     */
-    protected Dimension getScreenResolution()
-    {
-    	return this.screenResolution;
-    }
-    
 	/**
 	 * Updates the X coordinate to whatever value is passed.
 	 * @param x The value of the X coordinate to store. Must be >= 0.
@@ -179,7 +142,7 @@ public final class PixelCoordinate2D
 	{
 		if (x < 0)
 		{
-			throw new IllegalArgumentException("Screen resolution limits all 'X' coordinates to be >= 0.");
+			throw new IllegalArgumentException("'X' coordinates must be >= 0.");
 		}
 		
 		this.x = x;
@@ -194,18 +157,9 @@ public final class PixelCoordinate2D
 	{
 		if (y < 0)
 		{
-			throw new IllegalArgumentException("Screen resolution limits all 'Y' coordinates to be >= 0");
+			throw new IllegalArgumentException("'Y' Coordinates must be >= 0.");
 		}
 		
 		this.y = y;
-	}
-	
-	/**
-	 * Updates the screen resolution to the passed resolution.
-	 * @param screenResolution Resolution of the monitor/s that are being used.
-	 */
-	private void setScreenResolution(Dimension screenResolution)
-	{
-		this.screenResolution = screenResolution;
 	}
 }

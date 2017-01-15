@@ -3,7 +3,6 @@ package com.github.stevewhit.mouserecorder.monitor;
 import static org.junit.Assert.*;
 
 import java.awt.Dimension;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +14,7 @@ public class PixelCoordinate2DTest
 	@Before
 	public void setUp() throws Exception
 	{
-		pixelCoord = new PixelCoordinate2D(10, 129, new Dimension(100, 150));
+		pixelCoord = new PixelCoordinate2D(10, 129);
 	}
 	
 	@After
@@ -43,70 +42,27 @@ public class PixelCoordinate2DTest
 	{
 		pixelCoord = new PixelCoordinate2D(0, 0);
 		assertTrue(pixelCoord.isValidCoord());
-		assertFalse(pixelCoord.isInsideResolution());
-		assertNull(pixelCoord.getScreenResolution());
+		assertTrue(pixelCoord.isInsideScreenDimensions(new Dimension(100, 150)));
 		
 		pixelCoord = new PixelCoordinate2D(0, 1);
 		assertTrue(pixelCoord.isValidCoord());
-		assertFalse(pixelCoord.isInsideResolution());
-		assertNull(pixelCoord.getScreenResolution());
+		assertTrue(pixelCoord.isInsideScreenDimensions(new Dimension(100, 150)));
 		
 		pixelCoord = new PixelCoordinate2D(1, 0);
 		assertTrue(pixelCoord.isValidCoord());
-		assertFalse(pixelCoord.isInsideResolution());
-		assertNull(pixelCoord.getScreenResolution());
+		assertTrue(pixelCoord.isInsideScreenDimensions(new Dimension(100, 150)));
 		
 		pixelCoord = new PixelCoordinate2D(1, 1);
 		assertTrue(pixelCoord.isValidCoord());
-		assertFalse(pixelCoord.isInsideResolution());
-		assertNull(pixelCoord.getScreenResolution());
+		assertTrue(pixelCoord.isInsideScreenDimensions(new Dimension(100, 150)));
 		
 		pixelCoord = new PixelCoordinate2D(13241, 123412);
 		assertTrue(pixelCoord.isValidCoord());
-		assertFalse(pixelCoord.isInsideResolution());
-		assertNull(pixelCoord.getScreenResolution());
+		assertFalse(pixelCoord.isInsideScreenDimensions(new Dimension(100, 150)));
 	}
 
 	//================================================================================
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void testPixelCoordinate2DIntIntDimension_InvalidX()
-	{
-		pixelCoord = new PixelCoordinate2D(-1, 1, new Dimension(10, 12));
-	}
-	
-	@Test(expected = IllegalArgumentException.class)
-	public void testPixelCoordinate2DIntIntDimension_InvalidY()
-	{
-		pixelCoord = new PixelCoordinate2D(1, -1, new Dimension(10, 12));
-	}
-	
-	@Test
-	public void testPixelCoordinate2DIntIntDimension_ValidTests()
-	{
-		pixelCoord = new PixelCoordinate2D(0, 0, new Dimension(10, 12));
-		assertTrue(pixelCoord.isValidCoord());
-		assertTrue(pixelCoord.isInsideResolution());
-		assertEquals(new Dimension(10, 12), pixelCoord.getScreenResolution());		
-		
-		pixelCoord = new PixelCoordinate2D(1, 0, new Dimension(10, 12));
-		assertTrue(pixelCoord.isValidCoord());
-		assertTrue(pixelCoord.isInsideResolution());
-		assertEquals(new Dimension(10, 12), pixelCoord.getScreenResolution());	
-		
-		pixelCoord = new PixelCoordinate2D(0, 1, new Dimension(10, 12));
-		assertTrue(pixelCoord.isValidCoord());
-		assertTrue(pixelCoord.isInsideResolution());
-		assertEquals(new Dimension(10, 12), pixelCoord.getScreenResolution());	
-		
-		pixelCoord = new PixelCoordinate2D(1033, 923, new Dimension(1500, 1000));
-		assertTrue(pixelCoord.isValidCoord());
-		assertTrue(pixelCoord.isInsideResolution());
-		assertEquals(new Dimension(1500, 1000), pixelCoord.getScreenResolution());	
-	}
-
-	//================================================================================
-
 	@Test
 	public void testGetX()
 	{
@@ -132,12 +88,25 @@ public class PixelCoordinate2DTest
 	//================================================================================
 	
 	@Test
-	public void testIsInsideResolution()
+	public void testIsInsideResolution_AllValid()
 	{
-		assertTrue(pixelCoord.isInsideResolution());
+		// 10, 129
+		assertTrue(pixelCoord.isInsideScreenDimensions(new Dimension(10, 1000)));
+		assertTrue(pixelCoord.isInsideScreenDimensions(new Dimension(100, 129)));
+		assertTrue(pixelCoord.isInsideScreenDimensions(new Dimension(10, 129)));
+		assertTrue(pixelCoord.isInsideScreenDimensions(new Dimension(1000, 1000)));
 		
-		pixelCoord = new PixelCoordinate2D(10, 12);
-		assertFalse(pixelCoord.isInsideResolution());
+		assertFalse(pixelCoord.isInsideScreenDimensions(new Dimension(9, 1000)));
+		assertFalse(pixelCoord.isInsideScreenDimensions(new Dimension(100, 128)));
+		assertFalse(pixelCoord.isInsideScreenDimensions(new Dimension(9, 128)));
+		
+		assertFalse(pixelCoord.isInsideScreenDimensions(new Dimension(2, 2)));
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIsInsideResolution_nullDimension()
+	{
+		pixelCoord.isInsideScreenDimensions(null);
 	}
 	
 	//================================================================================
@@ -158,18 +127,6 @@ public class PixelCoordinate2DTest
 	public void testToString()
 	{
 		assertEquals(pixelCoord.toString(), "(10, 129)");
-	}
-	
-	//================================================================================
-	
-	@Test
-	public void testGetScreenResolution()
-	{
-		Dimension newDimension = new Dimension(100, 150);
-		assertEquals(pixelCoord.getScreenResolution(), newDimension);
-		
-		newDimension = new Dimension(100, 151);
-		assertNotEquals(pixelCoord.getScreenResolution(), newDimension);
 	}
 	
 	//================================================================================
