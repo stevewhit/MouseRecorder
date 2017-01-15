@@ -2,8 +2,6 @@ package com.github.stevewhit.mouserecorder.monitor;
 
 import static org.junit.Assert.*;
 
-import java.awt.Color;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

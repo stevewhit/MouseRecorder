@@ -16,7 +16,7 @@ public class PixelColor
 	 * Constructor that accepts an Red, Green, Blue integer
 	 * @param rgbValue The RBG Value of this color.
 	 */
-	public PixelColor(int rgbValue)
+	protected PixelColor(int rgbValue)
 	{
 		setRGBValue(rgbValue);
 	}
