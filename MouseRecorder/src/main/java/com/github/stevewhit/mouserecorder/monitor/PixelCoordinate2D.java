@@ -27,7 +27,7 @@ public final class PixelCoordinate2D
 	 * @param y The Y value of the pixel.
 	 * @throws IllegalArgumentException Throws if either the X or Y values are less than 0.
 	 */
-	protected PixelCoordinate2D(int x, int y) throws IllegalArgumentException
+	public PixelCoordinate2D(int x, int y) throws IllegalArgumentException
 	{
 		try
 		{

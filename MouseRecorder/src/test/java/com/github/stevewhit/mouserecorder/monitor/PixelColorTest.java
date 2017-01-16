@@ -57,7 +57,7 @@ public class PixelColorTest
 	@Test
 	public void testToString()
 	{
-		assertEquals(color.toString(), "Red: 178, Green: 102, Blue: 255");
+		assertEquals(color.toString(), "(R178/G102/B255)");
 	}
 	
 	@Test
