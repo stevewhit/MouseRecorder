@@ -16,7 +16,7 @@ public class PixelColor
 	 * Constructor that accepts an Red, Green, Blue integer
 	 * @param rgbValue The RBG Value of this color.
 	 */
-	protected PixelColor(int rgbValue)
+	public PixelColor(int rgbValue)
 	{
 		setRGBValue(rgbValue);
 	}
@@ -75,7 +75,7 @@ public class PixelColor
 	@Override
 	public String toString()
 	{
-		return String.format("Red: %1$d, Green: %2$d, Blue: %3$d", getRedValue(), getGreenValue(), getBlueValue());
+		return String.format("(R%1$d/G%2$d/B%3$d)", getRedValue(), getGreenValue(), getBlueValue());
 	}
 	
 	/**
