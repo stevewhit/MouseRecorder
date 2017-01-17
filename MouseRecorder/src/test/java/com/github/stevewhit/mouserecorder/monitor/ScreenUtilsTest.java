@@ -3,14 +3,11 @@ package com.github.stevewhit.mouserecorder.monitor;
 import static org.junit.Assert.*;
 
 import java.awt.AWTException;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.Buffer;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
