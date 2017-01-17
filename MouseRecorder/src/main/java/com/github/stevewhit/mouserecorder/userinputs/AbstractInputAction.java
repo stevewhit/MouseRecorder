@@ -14,8 +14,18 @@ public abstract class AbstractInputAction
 	
 	public AbstractInputAction(LocalDateTime actionDateTime) throws IllegalArgumentException, IllegalStateException
 	{
-		setActionDateTime(actionDateTime);
-		setActionId();
+		try
+		{
+			setActionDateTime(actionDateTime);
+			setActionId();
+		}
+		catch (IllegalArgumentException ex) 
+		{
+			actionDateTime = null;
+			actionId = null;
+			
+			throw new IllegalArgumentException("Could not create input action because ==> " + ex.getMessage());
+		}
 	}
 	
 	/**
