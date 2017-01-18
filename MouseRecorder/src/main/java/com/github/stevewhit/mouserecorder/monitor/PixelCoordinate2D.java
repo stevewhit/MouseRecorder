@@ -130,6 +130,11 @@ public final class PixelCoordinate2D
 	@Override
 	public String toString()
 	{
+		if (!isValidCoord())
+		{
+			return null;
+		}
+		
 		return String.format("(%1$d, %2$d)", x, y);
 	}
 

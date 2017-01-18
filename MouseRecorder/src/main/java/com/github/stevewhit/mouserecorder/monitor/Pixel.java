@@ -63,6 +63,11 @@ public class Pixel
 	 */
 	public boolean isValidPixel()
 	{
+		if (location == null || color == null)
+		{
+			return false;
+		}
+		
 		// Pixel color is un-restrictive so only test the location for validity.
 		return location.isValidCoord();
 	}
@@ -76,6 +81,11 @@ public class Pixel
 	@Override
 	public String toString()
 	{
+		if ( !isValidPixel())
+		{
+			return null;
+		}
+		
 		return String.format("%1$s-->%2$s", location.toString(), color.toString());
 	}
 	
