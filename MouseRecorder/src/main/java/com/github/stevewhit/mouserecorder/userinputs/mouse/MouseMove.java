@@ -70,7 +70,7 @@ public class MouseMove extends AbstractInputAction
 	 */
 	public double getMoveDistance() throws IllegalStateException
 	{
-		if (!isValidMove())
+		if (!isValidAction())
 		{
 			throw new IllegalStateException("Starting and ending pixels need to be initialized and valid.");
 		}
@@ -83,10 +83,12 @@ public class MouseMove extends AbstractInputAction
 	}
 	
 	/**
-	 * Checks for proper initialization of the starting and ending pixels and that each pixel is valid.
-	 * @return Returns true if both pixels are valid.
+	 * {@inheritDoc}
+	 * <p>
+	 * Checks this action for invalid starting and ending pixels.
+	 * </p>
 	 */
-	public boolean isValidMove()
+	public boolean isValidAction()
 	{
 		return (startPixel != null) && startPixel.isValidPixel() && (endPixel != null) && endPixel.isValidPixel();
 	}
@@ -100,7 +102,7 @@ public class MouseMove extends AbstractInputAction
 	@Override
 	public String toString()
 	{
-		if (!isValidMove())
+		if (!isValidAction())
 		{
 			return null;
 		}

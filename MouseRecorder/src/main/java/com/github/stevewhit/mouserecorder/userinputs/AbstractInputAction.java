@@ -29,6 +29,12 @@ public abstract class AbstractInputAction
 	}
 	
 	/**
+	 * Verifies the action is initialized properly and meets all action requirements.
+	 * @return Returns true if the action is valid; otherwise false.
+	 */
+	public abstract boolean isValidAction();
+	
+	/**
 	 * Returns the date time of the action.
 	 * @return Returns the date time of the action as a LocalDateTime.
 	 */

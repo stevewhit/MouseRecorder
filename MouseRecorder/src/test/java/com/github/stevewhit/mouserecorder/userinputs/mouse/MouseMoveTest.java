@@ -60,7 +60,7 @@ public class MouseMoveTest
 	{
 		assertTrue(move.getStartPixel().equals(startPixel));
 		assertTrue(move.getEndPixel().equals(endPixel));
-		assertTrue(move.isValidMove());
+		assertTrue(move.isValidAction());
 		assertNotNull(move.getActionId());
 		assertNotNull(move.getActionDateTime());
 	}
@@ -98,7 +98,7 @@ public class MouseMoveTest
 	@Test
 	public void testIsValidMove()
 	{
-		assertTrue(move.isValidMove());
+		assertTrue(move.isValidAction());
 	}
 
 	//========================================================

@@ -41,7 +41,7 @@ public class MouseWaitTest
 	@Test
 	public void testMouseWait_valid()
 	{
-		assertTrue(wait.isValidWait());
+		assertTrue(wait.isValidAction());
 		assertTrue(wait.getWaitTime() == 12344321);
 		
 		wait = new MouseWait(0);
@@ -61,7 +61,7 @@ public class MouseWaitTest
 	@Test
 	public void testIsValidWait()
 	{
-		assertTrue(wait.isValidWait());
+		assertTrue(wait.isValidAction());
 	}
 
 	//================================================================

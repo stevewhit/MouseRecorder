@@ -41,10 +41,12 @@ public class MouseWait extends AbstractInputAction
 	}
 	
 	/**
-	 * Checks this action for validity by checking to make sure the wait time is >= 0.
-	 * @return Returns true if this wait action is valid, otherwise false.
+	 * {@inheritDoc}
+	 * <p>
+	 * Checks this action to make sure wait time is >= 0.
+	 * </p>
 	 */
-	public boolean isValidWait()
+	public boolean isValidAction()
 	{
 		return waitTime >= 0;
 	}
@@ -58,6 +60,11 @@ public class MouseWait extends AbstractInputAction
 	@Override
 	public String toString()
 	{
+		if (!isValidAction())
+		{
+			return null;
+		}
+		
 		return String.format("Wait: %1$dms", waitTime);
 	}
 	

@@ -18,6 +18,13 @@ public class AbstractInputActionTest
 		{
 			super(actionDateTime);
 		}
+		
+		public boolean isValidAction()
+		{
+			// Implementation specific.
+			
+			return true;
+		}
 	}
 	
 	AbstractInputAction inputAction;

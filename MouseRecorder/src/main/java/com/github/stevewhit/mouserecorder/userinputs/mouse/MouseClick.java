@@ -92,6 +92,22 @@ public class MouseClick extends AbstractInputAction
 	}
 	
 	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Checks this action for an invalid pixel and hold times less than 0.
+	 * </p>
+	 */
+	public boolean isValidAction()
+	{
+		if (pixelClicked == null || mouseButton == null)
+		{
+			return false;
+		}
+			
+		return (pixelClicked.isValidPixel()) && (clickHoldTime >= 0 );
+	}
+	
+	/**
 	 * Returns a formatted string that represents the click action.
 	 * <pre>
 	 * Example output: 'Right click (12, 234), hold 123ms'
@@ -100,6 +116,11 @@ public class MouseClick extends AbstractInputAction
 	@Override
 	public String toString()
 	{
+		if (!isValidAction())
+		{
+			return null;
+		}
+		
 		return String.format("%1s click %2s, hold %3dms", mouseButton, pixelClicked.getLocation().toString(), clickHoldTime);
 	}
 	
