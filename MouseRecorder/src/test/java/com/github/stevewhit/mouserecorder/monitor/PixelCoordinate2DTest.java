@@ -108,7 +108,7 @@ public class PixelCoordinate2DTest
 	{
 		pixelCoord.isInsideScreenDimensions(null);
 	}
-	
+
 	//================================================================================
 	
 	@Test

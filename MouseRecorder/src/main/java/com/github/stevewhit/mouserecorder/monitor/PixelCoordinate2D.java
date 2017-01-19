@@ -74,8 +74,9 @@ public final class PixelCoordinate2D
     /**
      * Checks to see if this coordinate is inside the given screen dimensions.
      * @return Returns true if the pixel coordinate is inside the dimensions, otherwise false;
+     * @throws IllegalArgumentException Throws if screen dimensions are null
      */
-    public boolean isInsideScreenDimensions(Dimension screenDimensions)
+    public boolean isInsideScreenDimensions(Dimension screenDimensions) throws IllegalArgumentException
     {
     	if (screenDimensions == null)
     	{
