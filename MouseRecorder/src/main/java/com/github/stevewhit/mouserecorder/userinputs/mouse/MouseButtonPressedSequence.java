@@ -2,11 +2,7 @@ package com.github.stevewhit.mouserecorder.userinputs.mouse;
 
 import java.time.LocalDateTime;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-
-import javax.imageio.ImageTypeSpecifier;
-
 import com.github.stevewhit.mouserecorder.monitor.PixelCoordinate2D;
 import com.github.stevewhit.mouserecorder.userinputs.AbstractInputAction;
 import com.github.stevewhit.mouserecorder.userinputs.ActionSequence;

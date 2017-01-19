@@ -1,17 +1,11 @@
 package com.github.stevewhit.mouserecorder.userinputs.mouse;
 
 import static org.junit.Assert.*;
-
-import java.net.StandardProtocolFamily;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import com.github.stevewhit.mouserecorder.monitor.Pixel;
 import com.github.stevewhit.mouserecorder.monitor.PixelColor;
 import com.github.stevewhit.mouserecorder.monitor.PixelCoordinate2D;
