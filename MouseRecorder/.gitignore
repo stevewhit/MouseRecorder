@@ -1,1 +1,6 @@
 /target/
+doc/
+*.html
+*.project
+*.classpath
+*.settings
