@@ -1,6 +1,8 @@
 /target/
 doc/
 *.html
-*.project
-*.classpath
+*.project*
+.project
+*.classpath*
+*.settings/
 *.settings
