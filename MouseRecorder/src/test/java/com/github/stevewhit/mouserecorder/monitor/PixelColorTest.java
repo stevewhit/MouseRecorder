@@ -2,6 +2,8 @@ package com.github.stevewhit.mouserecorder.monitor;
 
 import static org.junit.Assert.*;
 
+import java.awt.Color;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,20 @@ public class PixelColorTest
 	}
 	
 	//====================================================================
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testPixelColorColor_nullColor()
+	{
+		color = new PixelColor(null);
+	}
+	
+	@Test
+	public void testPixelColorColor_valid()
+	{
+		PixelColor samecolor = new PixelColor(new Color(11691775));
+		
+		assertTrue(color.equals(samecolor));
+	}
 	
 	@Test
 	public void testPixelColor()

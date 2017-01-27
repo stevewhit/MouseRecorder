@@ -1,5 +1,7 @@
 package com.github.stevewhit.mouserecorder.monitor;
 
+import java.awt.Color;
+
 /**
  * The RGB Color of any given pixel.
  * @author Steve Whitmire (swhit114@gmail.com)
@@ -19,6 +21,20 @@ public class PixelColor
 	public PixelColor(int rgbValue)
 	{
 		setRGBValue(rgbValue);
+	}
+	
+	/**
+	 * Constructor that accepts a color.
+	 * @param color The color for this object.
+	 */
+	public PixelColor(Color color)
+	{
+		if (color == null)
+		{
+			throw new IllegalArgumentException("Color cannot be null.");
+		}
+		
+		setRGBValue(color.getRGB());
 	}
 	
 	/**
@@ -63,7 +79,8 @@ public class PixelColor
 	 */
 	private void setRGBValue(int rgbValue)
 	{
-		this.rgbValue = rgbValue;
+		// Remove the alpha value.
+		this.rgbValue = rgbValue & 0x00FFFFFF;
 	}
 	
 	/**
