@@ -101,8 +101,8 @@ public class AbstractKeyboardInputActionTest
 	@Test
 	public void testGetKeyValueText()
 	{
-		assertEquals(keyboardIA.getKeyValueText('A'), "A");
-		assertEquals(keyboardIA.getKeyValueText(0), null);
+		assertEquals(AbstractKeyboardInputAction.getKeyValueText('A'), "A");
+		assertEquals(AbstractKeyboardInputAction.getKeyValueText(0), null);
 	}
 
 	//=====================================================
