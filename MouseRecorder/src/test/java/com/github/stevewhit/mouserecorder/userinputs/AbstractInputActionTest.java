@@ -1,11 +1,6 @@
 package com.github.stevewhit.mouserecorder.userinputs;
 
 import static org.junit.Assert.*;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,9 +9,9 @@ public class AbstractInputActionTest
 {
 	protected class ConcreteInputAction extends AbstractInputAction
 	{
-		public ConcreteInputAction(LocalDateTime actionDateTime)
+		public ConcreteInputAction(long timeStamp)
 		{
-			super(actionDateTime);
+			super(timeStamp);
 		}
 		
 		public boolean isValidAction()
@@ -28,28 +23,20 @@ public class AbstractInputActionTest
 	}
 	
 	AbstractInputAction inputAction;
-	LocalDate date;
-	LocalTime time;
-	LocalDateTime dateTime;
+	long timeStamp;
 	
 	@Before
 	public void setUp() throws Exception
 	{
-		date = LocalDate.of(2016, 12, 9);
-		time = LocalTime.of(5, 27, 51, 500830);
-		dateTime = LocalDateTime.of(date, time);
+		timeStamp = 123456789876543l;
 		
-		inputAction = new ConcreteInputAction(dateTime);
+		inputAction = new ConcreteInputAction(timeStamp);
 	}
 	
 	@After
 	public void tearDown() throws Exception
 	{
 		inputAction = null;
-		
-		date = null;
-		time = null;
-		dateTime = null;
 	}
 	
 	//=============================================================
@@ -57,38 +44,23 @@ public class AbstractInputActionTest
 	@Test(expected=IllegalArgumentException.class)
 	public void testAbstractInputAction_nullDateTime()
 	{
-		inputAction = new ConcreteInputAction(null);
+		inputAction = new ConcreteInputAction(-1);
 	}
 	
 	@Test
 	public void testAbstractInputAction_valid()
 	{
-		assertEquals(inputAction.getActionDateTime(), dateTime);
-		assertEquals(inputAction.getActionId().toString(), "20161209052751000500830");
+		assertTrue(inputAction.getTimeStamp() == 123456789876543l);
+		assertEquals("Timestamp: 123456789876543ns", inputAction.toString());
+		assertNotNull(inputAction.getActionId());
 	}
 	
 	//=============================================================
 	
 	@Test
-	public void testGetActionDateTime()
+	public void testGetTimeStamp()
 	{
-		assertEquals(inputAction.getActionDateTime(), dateTime);
-	}
-	
-	//=============================================================
-	
-	@Test
-	public void testGetActionDate()
-	{
-		assertEquals(inputAction.getActionDate(), date);
-	}
-
-	//=============================================================
-	
-	@Test
-	public void testGetActionTime()
-	{
-		assertEquals(inputAction.getActionTime(), time);
+		assertTrue(inputAction.getTimeStamp() == 123456789876543l);
 	}
 
 	//=============================================================
@@ -96,23 +68,7 @@ public class AbstractInputActionTest
 	@Test
 	public void testGetActionId()
 	{
-		assertEquals(inputAction.getActionId().toString(), "20161209052751000500830");
-	}
-
-	//=============================================================
-	
-	@Test
-	public void testGetActionTimeString()
-	{
-		assertEquals(inputAction.getActionTimeString(), "05:27:51:000500830");
-	}
-
-	//=============================================================
-	
-	@Test
-	public void testGetActionDateString()
-	{
-		assertEquals(inputAction.getActionDateString(), "12/09/2016");
+		assertNotNull(inputAction.getActionId());
 	}
 
 	//=============================================================
@@ -120,7 +76,7 @@ public class AbstractInputActionTest
 	@Test
 	public void testToString()
 	{
-		assertEquals(inputAction.toString(), "12/09/2016 @ 05:27:51:000500830");
+		assertEquals(inputAction.toString(), "Timestamp: 123456789876543ns");
 	}
 
 	//=============================================================

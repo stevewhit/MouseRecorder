@@ -1,27 +1,41 @@
 package com.github.stevewhit.mouserecorder.userinputs;
 
 import java.math.BigInteger;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Represents a user input action that occurred. This object contains a timestamp and a actionId for identification purposes.
+ * @author Steve Whitmire (swhit114@gmail.com)
+ *
+ */
 public abstract class AbstractInputAction
 {
-	private LocalDateTime actionDateTime;
-	
+	/**
+	 * The random ID for this action to help with identification purposes.
+	 */
 	private BigInteger actionId;
 	
-	public AbstractInputAction(LocalDateTime actionDateTime) throws IllegalArgumentException, IllegalStateException
+	/**
+	 * The time (in nanoseconds) that the action took place.
+	 */
+	private long timeStamp;
+	
+	/**
+	 * Constructor that accepts a time to initialize this object.
+	 * @param timeCreated The time (in nanoseconds) that the action took place.
+	 * @throws IllegalArgumentException Throws if the time stamp is negative.
+	 */
+	protected AbstractInputAction(long timeStamp) throws IllegalArgumentException
 	{
 		try
 		{
-			setActionDateTime(actionDateTime);
+			setTimeStamp(timeStamp);
 			setActionId();
 		}
 		catch (IllegalArgumentException ex) 
 		{
-			actionDateTime = null;
+			timeStamp = -1;
 			actionId = null;
 			
 			throw new IllegalArgumentException("Could not create input action because ==> " + ex.getMessage());
@@ -32,33 +46,18 @@ public abstract class AbstractInputAction
 	 * Verifies the action is initialized properly and meets all action requirements.
 	 * @return Returns true if the action is valid; otherwise false.
 	 */
-	public abstract boolean isValidAction();
-	
-	/**
-	 * Returns the date time of the action.
-	 * @return Returns the date time of the action as a LocalDateTime.
-	 */
-	public LocalDateTime getActionDateTime()
+	public boolean isValidAction()
 	{
-		return this.actionDateTime;
+		return timeStamp >= 0 && actionId != null;
 	}
 	
 	/**
-	 * Returns the date portion of the datetime stored by the action.
-	 * @return Returns the date of the action as a LocalDate.
+	 * Returns the time that this action took place
+	 * @return Returns the time that this action took place in nanoseconds.
 	 */
-	public LocalDate getActionDate()
+	public long getTimeStamp()
 	{
-		return actionDateTime.toLocalDate();
-	}
-	
-	/**
-	 * Returns the time portion of the date time for the action.
-	 * @return Returns the time portion of the action as a LocalTime.
-	 */
-	public LocalTime getActionTime()
-	{
-		return actionDateTime.toLocalTime();
+		return this.timeStamp;
 	}
 	
 	/**
@@ -71,61 +70,37 @@ public abstract class AbstractInputAction
 	}
 	
 	/**
-	 * Returns the time of the action as a formatted string.
-	 * @return Returns the time of the action in the following string format: HH:mm:ss:SSSSSSSSS
-	 */
-	public String getActionTimeString()
-	{
-		return actionDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss:SSSSSSSSS"));
-	}
-	
-	/**
-	 * Returns the date of the action as a formatted string.
-	 * @return Returns the date of the action in the following string format: MM/dd/yyyy
-	 */
-	public String getActionDateString()
-	{
-		return actionDateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-	}
-	
-	/**
 	 * Returns a formatted string that represents the action.
 	 * <pre>
-	 * Example output: '06/09/2016 @ 05:27:51:000500830'
+	 * Example output: Timestamp: 123456789876541ns
 	 * </pre>
 	 */
 	@Override
 	public String toString()
 	{
-		return String.format("%1s @ %2s", getActionDateString(), getActionTimeString());
+		return String.format("Timestamp: %1$sns", String.valueOf(getTimeStamp()));
 	}
 	
 	/**
-	 * Sets the action date time for this action.
-	 * @param actionDateTime The local date time associated with this action.
-	 * @throws IllegalArgumentException
+	 * Sets the time stamp for this action.
+	 * @param timeStamp The time stamp (in nanoseconds) this action occurred.
+	 * @throws IllegalArgumentException Throws if the time stamp is negative.
 	 */
-	private void setActionDateTime(LocalDateTime actionDateTime) throws IllegalArgumentException
+	private void setTimeStamp(long timeStamp) throws IllegalArgumentException
 	{
-		if (actionDateTime == null)
+		if (timeStamp < 0)
 		{
-			throw new IllegalArgumentException("Cannot set a null actionDateTime.");
+			throw new IllegalArgumentException("Action cannot have a negative timestamp.");
 		}
 		
-		this.actionDateTime = actionDateTime;
+		this.timeStamp = timeStamp;
 	}
 	
 	/**
 	 * Generates a new action id for this action by combining various parts of the date time.
-	 * @throws IllegalStateException Throws if the action date time is not set before this method is called.
 	 */
-	private void setActionId() throws IllegalStateException
+	private void setActionId()
 	{
-		if (actionDateTime == null)
-		{
-			throw new IllegalStateException("Action date time must be set before creating a new action id.");
-		}
-		
-		this.actionId = new BigInteger(actionDateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSSSSS")));
+		this.actionId = new BigInteger(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSSSSS")));
 	}
 }
