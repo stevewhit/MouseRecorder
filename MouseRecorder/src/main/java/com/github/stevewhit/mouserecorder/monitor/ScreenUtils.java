@@ -1,7 +1,6 @@
 package com.github.stevewhit.mouserecorder.monitor;
 
 import java.awt.AWTException;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Robot;

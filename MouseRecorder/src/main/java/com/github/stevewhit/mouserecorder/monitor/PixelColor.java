@@ -86,7 +86,7 @@ public class PixelColor
 	/**
 	 * Returns a formatted string indicating the red, green, and blue components of this color.
 	 * <pre>
-	 * Example output ==> Red: 0, Green: 233, Blue: 213
+	 * Example output ==> (R214/G123/B34)
 	 * </pre>
 	 */
 	@Override

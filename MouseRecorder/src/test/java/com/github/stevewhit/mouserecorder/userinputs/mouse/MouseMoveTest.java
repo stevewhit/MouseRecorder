@@ -1,36 +1,29 @@
 package com.github.stevewhit.mouserecorder.userinputs.mouse;
 
 import static org.junit.Assert.*;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.github.stevewhit.mouserecorder.monitor.Pixel;
-import com.github.stevewhit.mouserecorder.monitor.PixelColor;
 import com.github.stevewhit.mouserecorder.monitor.PixelCoordinate2D;
 
 public class MouseMoveTest
 {
 	MouseMove move;
-	Pixel startPixel;
-	Pixel endPixel;
+	PixelCoordinate2D location;
 	
 	@Before
 	public void setUp() throws Exception
 	{
-		startPixel = new Pixel(new PixelColor(11691775), new PixelCoordinate2D(100, 150));
-		endPixel = new Pixel(new PixelColor(11691775), new PixelCoordinate2D(150, 250));
+		location = new PixelCoordinate2D(100, 135);
 		
-		move = new MouseMove(startPixel, endPixel);
+		move = new MouseMove(location, 12341242134132l);
 	}
 	
 	@After
 	public void tearDown() throws Exception
 	{
 		move = null;
-		startPixel = null;
-		endPixel = null;
+		location = null;
 	}
 	
 	//========================================================
@@ -38,69 +31,36 @@ public class MouseMoveTest
 	@Test
 	public void testToString()
 	{
-		assertEquals("Move: (100, 150)-->(150, 250)", move.toString());
+		assertEquals("MOUSEMOVE: (100, 135)", move.toString());
 	}
 
 	//========================================================
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void testMouseMove_nullStartPixel()
+	public void testMouseMove_nullLocation()
 	{
-		move = new MouseMove(null, endPixel);
+		move = new MouseMove(null, 13241241l);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void testMouseMove_nullEndPixel()
+	public void testMouseMove_NegTimeStamp()
 	{
-		move = new MouseMove(startPixel, null);
+		move = new MouseMove(location, -1);
 	}
 	
 	@Test
 	public void testMouseMove_Valid()
 	{
-		assertTrue(move.getStartPixel().equals(startPixel));
-		assertTrue(move.getEndPixel().equals(endPixel));
+		assertTrue(move.getLocation().equals(new PixelCoordinate2D(100, 135)));
 		assertTrue(move.isValidAction());
-		assertNotNull(move.getActionId());
-		assertNotNull(move.getActionDateTime());
-	}
+		assertTrue(move.getActionId() != null);
+		
+		move = new MouseMove(location, 0);
+		move = new MouseMove(location, 1);
+		move = new MouseMove(location, 12341234123l);
+		
+	}	
 	
-	//========================================================
-	
-	@Test
-	public void testGetStartPixel()
-	{
-		assertTrue(move.getStartPixel().equals(startPixel));
-		assertFalse(move.getStartPixel().equals(endPixel));
-	}
-
-	//========================================================
-	
-	@Test
-	public void testGetEndPixel()
-	{
-		assertTrue(move.getEndPixel().equals(endPixel));
-		assertFalse(move.getEndPixel().equals(startPixel));
-	}
-
-	//========================================================
-	
-	@Test
-	public void testGetMoveDistance()
-	{
-		double distance = Math.sqrt(12500);
-
-		assertTrue(move.getMoveDistance() == distance);
-	}
-
-	//========================================================
-
-	@Test
-	public void testIsValidMove()
-	{
-		assertTrue(move.isValidAction());
-	}
-
 	//========================================================
 	
 }

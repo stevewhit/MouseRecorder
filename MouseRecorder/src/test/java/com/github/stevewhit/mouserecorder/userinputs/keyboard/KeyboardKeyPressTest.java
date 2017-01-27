@@ -15,7 +15,7 @@ public class KeyboardKeyPressTest
 	@Before
 	public void setUp() throws Exception
 	{
-		pressedKey = new KeyboardKeyPress('A', 1002);
+		pressedKey = new KeyboardKeyPress('A', 1651616);
 	}
 	
 	@After
@@ -37,10 +37,10 @@ public class KeyboardKeyPressTest
 	@Test
 	public void testToString()
 	{
-		assertEquals("KEY:A", pressedKey.toString());
+		assertEquals("KEYPRESS:A", pressedKey.toString());
 		
 		pressedKey = new KeyboardKeyPress(KeyEvent.VK_SEMICOLON, 109);
-		assertEquals("KEY:SEMICOLON", pressedKey.toString());
+		assertEquals("KEYPRESS:SEMICOLON", pressedKey.toString());
 		
 		// Can't test for an invalid keyboard key because we can't make one.
 	}
@@ -54,7 +54,7 @@ public class KeyboardKeyPressTest
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void testKeyboardKeyPress_NegHoldTime()
+	public void testKeyboardKeyPress_NegtimeStamp()
 	{
 		pressedKey = new KeyboardKeyPress(67, -1);
 	}
@@ -70,7 +70,7 @@ public class KeyboardKeyPressTest
 	{
 		assertTrue(pressedKey.isValidAction());
 		assertTrue(pressedKey.getKeyValueInt() == KeyEvent.VK_A);
-		assertTrue(pressedKey.getKeyHoldTime() == 1002);
+		assertTrue(pressedKey.getTimeStamp() == 1651616);
 		
 		pressedKey = new KeyboardKeyPress(67, 0);
 		pressedKey = new KeyboardKeyPress(67, 12341234);
@@ -89,15 +89,15 @@ public class KeyboardKeyPressTest
 	@Test
 	public void testGetKeyValueText()
 	{
-		assertEquals(pressedKey.getKeyValueText(), "A");
+		assertEquals(AbstractKeyboardInputAction.getKeyValueText('A'), "A");
 	}
 
 	//===========================================================
 	
 	@Test
-	public void testGetKeyHoldTime()
+	public void testGetTimeStamp()
 	{
-		assertTrue(pressedKey.getKeyHoldTime() == 1002);
+		assertTrue(pressedKey.getTimeStamp() == 1651616);
 	}
 
 	//===========================================================

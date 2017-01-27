@@ -1,13 +1,14 @@
 package com.github.stevewhit.mouserecorder.userinputs.mouse;
 
 import com.github.stevewhit.mouserecorder.monitor.PixelCoordinate2D;
+import com.github.stevewhit.mouserecorder.userinputs.AbstractInputAction;
 
 /**
  * An abstract class that represents a mouse click/release/move action
  * @author Steve Whitmire (swhit114@gmail.com)
  *
  */
-public abstract class AbstractMouseInputAction extends AbstractMouseAction
+public abstract class AbstractMouseInputAction extends AbstractInputAction
 {
 	/**
 	 * The 2d coordinate location of this mouse input action.
@@ -34,6 +35,19 @@ public abstract class AbstractMouseInputAction extends AbstractMouseAction
 			
 			throw new IllegalArgumentException("Cannot create mouse input action because ==> " + ex.getMessage());
 		}
+	}
+	
+	@Override
+	public abstract String toString();
+	
+	/**
+	 * {@inheritDoc}
+	 * Also checks the input action for a valid pixel coordinate.
+	 */
+	@Override
+	public boolean isValidAction()
+	{
+		return super.isValidAction() && location != null && location.isValidCoord();
 	}
 	
 	/**
