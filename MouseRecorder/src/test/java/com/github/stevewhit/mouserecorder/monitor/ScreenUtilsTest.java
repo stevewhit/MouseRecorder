@@ -3,6 +3,7 @@ package com.github.stevewhit.mouserecorder.monitor;
 import static org.junit.Assert.*;
 
 import java.awt.AWTException;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
@@ -185,4 +186,42 @@ public class ScreenUtilsTest
 	}
 	
 	//========================================================================================
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testGetScreenPixelColor_invalidpixelcoord1() throws AWTException
+	{
+		ScreenUtils.getScreenPixelColor(-1, 0);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testGetScreenPixelColor_invalidpixelcoord2() throws AWTException
+	{
+		ScreenUtils.getScreenPixelColor(0, -1);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testGetScreenPixelColor_InvalidPixelCoord3() throws IllegalArgumentException, AWTException
+	{
+		Dimension dimension = ScreenUtils.getScreenDimensions();
+		ScreenUtils.getScreenPixelColor((int)(dimension.getWidth()+1), 0);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testGetScreenPixelColor_InvalidPixelCoord4() throws IllegalArgumentException, AWTException
+	{
+		Dimension dimension = ScreenUtils.getScreenDimensions();
+		ScreenUtils.getScreenPixelColor(0, (int)(dimension.getHeight()+1));
+	}
+	
+	@Test
+	public void testGetScreenPixelColor_Valid() throws AWTException
+	{
+		Dimension dimension = ScreenUtils.getScreenDimensions();
+		ScreenUtils.getScreenPixelColor(0, 0);
+		ScreenUtils.getScreenPixelColor(100, 100);
+		ScreenUtils.getScreenPixelColor((int)dimension.getWidth(), (int)dimension.getHeight());
+	}
+
+	//========================================================================================
+	
 }

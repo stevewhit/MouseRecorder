@@ -1,6 +1,7 @@
 package com.github.stevewhit.mouserecorder.monitor;
 
 import java.awt.AWTException;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Robot;
@@ -19,7 +20,7 @@ public class ScreenUtils
 	private ScreenUtils(){}
 	
 	/**
-	 * Returns the active screen dimensions.
+	 * Returns the active screen dimensions of the active monitor. (Does not include additional monitors)
 	 * @return Returns the screen dimensions as a Dimension.
 	 */
 	public static Dimension getScreenDimensions()
@@ -131,6 +132,38 @@ public class ScreenUtils
 		catch(IOException ex)
 		{
 			throw new IOException("Could not locate/write to desired file location because: " + ex.getMessage());
+		}
+	}
+	
+	/**
+	 * Reads and returns the color of the pixel at location (x, y). *Note: (0,0) is the top left corner of the screen.
+	 * @param x The x coordinate
+	 * @param y The y coordinate
+	 * @return Returns a PixelColor object representing the rgb values of the pixel.
+	 * @throws AWTException Throws if there is an error trying to read the pixel.
+	 * @throws IllegalArgumentException Throws if the x, y coordinates are not within the designated screen dimensions.
+	 */
+	public static PixelColor getScreenPixelColor(int x, int y) throws IllegalArgumentException, AWTException 
+	{
+		if (x < 0 || y < 0)
+		{
+			throw new IllegalArgumentException("Pixel coordinates must be greater than (0,0).");
+		}
+		
+		if (x > getScreenDimensions().getWidth() || y > getScreenDimensions().getHeight())
+		{
+			throw new IllegalArgumentException("Pixel coordinates must be inside the screen dimensions.");
+		}
+		
+		try
+		{
+			final Robot screenRobot = new Robot();
+			
+			return new PixelColor(screenRobot.getPixelColor(x, y));
+		}
+		catch (AWTException e)
+		{
+			throw new AWTException("Error occured trying to read from pixel (" + x + "," + y + ") ==>" + e.getMessage());
 		}
 	}
 	
