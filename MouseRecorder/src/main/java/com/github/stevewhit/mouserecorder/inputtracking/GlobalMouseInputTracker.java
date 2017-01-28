@@ -61,21 +61,6 @@ public class GlobalMouseInputTracker implements NativeMouseInputListener
 	@Override
 	public void nativeMousePressed(NativeMouseEvent e)
 	{
-		if (e.getButton() == 3)
-		{
-			try
-			{
-				GlobalScreen.unregisterNativeHook();
-			}
-			catch (NativeHookException e1)
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-			return;
-		}
-		
 		final long timeCaptured = System.nanoTime();
 		final int xCoord = e.getX();
 		final int yCoord = e.getY();
