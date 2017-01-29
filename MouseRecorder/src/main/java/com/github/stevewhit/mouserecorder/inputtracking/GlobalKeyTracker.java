@@ -1,9 +1,8 @@
 package com.github.stevewhit.mouserecorder.inputtracking;
 
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Queue;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
@@ -13,12 +12,12 @@ import org.jnativehook.keyboard.NativeKeyListener;
 public class GlobalKeyTracker implements NativeKeyListener
 {
 	/**
-	 * Typical format for key press: keyNumber, xCoordinate, yCoordinate, rgbInt, time(in nanoseconds)
+	 * Typical format for key press: keyNumber, time(in nanoseconds)
 	 */
 	private final static String KEY_PRESS_FORMAT = "KPRESS:%1$d:%2$s";
 	
 	/**
-	 * Typical format for key release: ButtonNumber, xCoordinate, yCoordinate, rgbInt, time(in nanoseconds)
+	 * Typical format for key release: keyNumber, time(in nanoseconds)
 	 */
 	private final static String KEY_RELEASE_FORMAT = "KRELEA:%1$d:%2$s";
 	
@@ -30,7 +29,12 @@ public class GlobalKeyTracker implements NativeKeyListener
 	/**
 	 * The cancellation keys that if pressed at the same time, stop the recording.
 	 */
-	private Map<Integer, Boolean> cancellationKeysMap; 
+	private ArrayList<Integer> cancellationKeys;
+	
+	/**
+	 * The keys that are currently pressed and held. Used so that multiple of the same "key pressed" actions aren't created for a single keypress.
+	 */
+	private ArrayList<Integer> pressedKeys;
 	
 	/**
 	 * Constructor that accepts a reference to the actions queue that the generated mouse clicks are added to and an array of cancellation keys. 
@@ -58,6 +62,8 @@ public class GlobalKeyTracker implements NativeKeyListener
 		
 		this.actionsQueue = actionsQueue;
 		
+		pressedKeys = new ArrayList<Integer>();
+		
 		setCancellationKeys(cancellationKeys);
 	}
 	
@@ -78,12 +84,19 @@ public class GlobalKeyTracker implements NativeKeyListener
 			return;
 		}
 		
-		// If the key is one of the cancellation keys
-		if (cancellationKeysMap.containsKey(key))
+		// Don't re-add the same key over and over.
+		if (pressedKeys.contains(key))
 		{
-			// Update the map value and check for the required cancellation sequence.
-			cancellationKeysMap.put(key, true);
-
+			return;
+		}
+		
+		// Add key to the list of pressed keys if not.
+		pressedKeys.add(key);
+		
+		// If the key is one of the cancellation keys.
+		if (cancellationKeys.contains(key))
+		{
+			// Check for the required cancellation sequence
 			if (areCancellationKeysPressed())
 			{
 				try
@@ -117,11 +130,15 @@ public class GlobalKeyTracker implements NativeKeyListener
 		final long timeCaptured = System.nanoTime();
 		final int key = KeyboardKeyConverterUtils.nativeKeyToEventKey(e);
 		
-		// If the key is one of the cancellation keys
-		if (cancellationKeysMap.containsKey(key))
+		// Remove the key from the pressed-keys list
+		for (Iterator<Integer> iter = pressedKeys.listIterator(); iter.hasNext();)
 		{
-			// Update the map value
-			cancellationKeysMap.put(key, false);
+			Integer pressedKeyId = iter.next();
+			
+			if (pressedKeyId == key)
+			{
+				iter.remove();
+			}
 		}
 		
 		final String actionToFormattedString = String.format(KEY_RELEASE_FORMAT, key, timeCaptured);
@@ -144,12 +161,12 @@ public class GlobalKeyTracker implements NativeKeyListener
 			cancellationKeys = new int[]{KeyEvent.VK_ALT, KeyEvent.VK_R};
 		}
 		
-		cancellationKeysMap = new HashMap<Integer, Boolean>();
+		this.cancellationKeys = new ArrayList<Integer>();
 		
 		// Add each of the keys to the cancellation key map.
 		for(int key : cancellationKeys)
 		{
-			cancellationKeysMap.put(key, false);
+			this.cancellationKeys.add(key);
 		}	
 	}
 	
@@ -162,10 +179,18 @@ public class GlobalKeyTracker implements NativeKeyListener
 		boolean stopRecording = true;
 		
 		// Iterate the cancellation keys and determine if they are all pressed at the same time.
-		for(Iterator<Boolean> cancellationKeysIterator = cancellationKeysMap.values().iterator(); cancellationKeysIterator.hasNext();)
+		for(Iterator<Integer> cancellationKeysIterator = cancellationKeys.listIterator(); cancellationKeysIterator.hasNext();)
 		{
-			boolean cancelValue = cancellationKeysIterator.next();
-			stopRecording = stopRecording && cancelValue;
+			Integer cancelKey = cancellationKeysIterator.next();
+			
+			if (pressedKeys.contains(cancelKey))
+			{
+				stopRecording = stopRecording && true;
+			}
+			else
+			{
+				stopRecording = stopRecording && false;
+			}
 		}
 		
 		return stopRecording;
