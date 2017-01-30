@@ -84,12 +84,6 @@ public class GlobalKeyTracker implements NativeKeyListener
 			return;
 		}
 		
-		// Don't re-add the same key over and over.
-		if (pressedKeys.contains(key))
-		{
-			return;
-		}
-		
 		// Add key to the list of pressed keys if not.
 		pressedKeys.add(key);
 		
@@ -127,6 +121,12 @@ public class GlobalKeyTracker implements NativeKeyListener
 	{
 		final long timeCaptured = System.nanoTime();
 		final int key = KeyboardKeyConverterUtils.nativeKeyToEventKey(e);
+		
+		if (key == -1)
+		{
+			System.out.println("Skipping unsupported key action: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
+			return;
+		}
 		
 		// Remove the key from the pressed-keys list
 		for (Iterator<Integer> iter = pressedKeys.listIterator(); iter.hasNext();)
@@ -186,6 +186,21 @@ public class GlobalKeyTracker implements NativeKeyListener
 			else
 			{
 				stopRecording = stopRecording && false;
+			}
+		}
+		
+		// If the stop recording keys are pressed, release them 
+		// so they aren't still pressed when the user starts playback.
+		if (stopRecording)
+		{
+			for(Iterator<Integer> cancellationKeysIterator = cancellationKeys.listIterator(); cancellationKeysIterator.hasNext();)
+			{
+				Integer cancelKey = cancellationKeysIterator.next();
+				
+				final String actionToFormattedString = String.format(KEY_RELEASE_FORMAT, cancelKey, System.nanoTime());
+				
+				// Add the formatted string to the queue.
+				actionsQueue.add(actionToFormattedString);
 			}
 		}
 		
