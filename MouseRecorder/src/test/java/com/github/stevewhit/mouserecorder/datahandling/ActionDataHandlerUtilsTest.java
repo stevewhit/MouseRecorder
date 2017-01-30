@@ -146,6 +146,51 @@ public class ActionDataHandlerUtilsTest
 
 	//=======================================================
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testConvertToActionData_nullList() throws IllegalArgumentException, DataFormatException
+	{
+		ActionDataHandlerUtils.convertToActionData(null);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testConvertToActionData_emptyList() throws IllegalArgumentException, DataFormatException
+	{
+		ActionDataHandlerUtils.convertToActionData(new LinkedList<String>());
+	}
+	
+	@Test(expected=DataFormatException.class)
+	public void testConvertToActionData_NotSupportedID() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		exportedItems.add("NOTSUPPORTEDID");
+		ActionDataHandlerUtils.convertToActionData(exportedItems);
+	}
+
+	@Test(expected=DataFormatException.class)
+	public void testConvertToActionData_DoesntHaveRequiredFields() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		exportedItems.add("MPRESS:3:469:76:1399149");
+		ActionDataHandlerUtils.convertToActionData(exportedItems);
+	}
+	
+	@Test(expected=DataFormatException.class)
+	public void testConvertToActionData_FieldsArentOfExpectedType() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		exportedItems.add("MPRESS:3:469:76:1399149:MRELEA");
+		ActionDataHandlerUtils.convertToActionData(exportedItems);
+	}
+	
+	@Test
+	public void testConvertToActionData_Valid() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		Queue<AbstractInputAction> convertedActions = ActionDataHandlerUtils.convertToActionData(exportedItems);
+		
+		assertTrue(convertedActions.size() == 8);
+		assertTrue(convertedActions.peek() instanceof MouseMove);
+		assertTrue(convertedActions.toArray()[7] instanceof KeyboardKeyPress);
+	}
+	
+	//=======================================================
+	
 	@Test(expected=DataFormatException.class)
 	public void testImportActionDataFromFile_NotSupportedID() throws IllegalArgumentException, IOException, DataFormatException
 	{
@@ -182,7 +227,7 @@ public class ActionDataHandlerUtilsTest
 		assertTrue(importedActions.peek() instanceof MouseMove);
 		assertTrue(importedActions.toArray()[7] instanceof KeyboardKeyPress);
 	}
-	
+
 	//=======================================================
 	
 	@Test(expected=IllegalArgumentException.class)

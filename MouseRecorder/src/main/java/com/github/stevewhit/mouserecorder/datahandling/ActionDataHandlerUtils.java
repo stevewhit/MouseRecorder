@@ -152,6 +152,41 @@ public class ActionDataHandlerUtils
 	}
 	
 	/**
+	 * Converts a list of string action data into a queue of abstract input actions.
+	 * @param stringActionData A list of action data with string representations.
+	 * @return Returns the same list but represented as abstract input actions.
+	 * @throws IllegalArgumentException Throws if the string action data is null or empty.
+	 * @throws DataFormatException Throws if the data in the string action data doesn't conform to the pre-existing input action structures.
+	 */
+	public static Queue<AbstractInputAction> convertToActionData(LinkedList<String> stringActionData) throws IllegalArgumentException, DataFormatException
+	{
+		if (stringActionData == null || stringActionData.isEmpty())
+		{
+			throw new IllegalArgumentException("String action data cannot be null or empty.");
+		}
+		
+		// A queue of processed abstract input actions based on the file data that was read in.
+		Queue<AbstractInputAction> processedActionData = new LinkedList<AbstractInputAction>();
+		
+		// Iterate the file data and convert each line into appropriate abstractuserinputactions.
+		for (Iterator<String> fileDataIterator = stringActionData.listIterator(); fileDataIterator.hasNext();)
+		{
+			String line = fileDataIterator.next();
+			
+			try
+			{
+				processedActionData.add(createInputActionByParsing(line));
+			}
+			catch (UnsupportedDataTypeException | DataFormatException | IllegalArgumentException ex) 
+			{
+				throw new DataFormatException("Cancelled data import on line " + stringActionData.indexOf(line) + " because ==> "+ ex.getMessage());
+			}
+		}
+		
+		return processedActionData;
+	}
+	
+	/**
 	 * Imports all data from a file into an arraylist of input actions.
 	 * @param fileLocation The system path where the file is stored.
 	 * @return Returns the file represented as a list of input actions. Each entry in the list is a line in the file.
@@ -164,25 +199,8 @@ public class ActionDataHandlerUtils
 		// Store the string data in the file in a list.
 		ArrayList<String> importedFileData = importStringDataFromFile(fileLocation);
 				
-		// A queue of processed abstract input actions based on the file data that was read in.
-		Queue<AbstractInputAction> processedActionData = new LinkedList<AbstractInputAction>();
-		
-		// Iterate the file data and convert each line into appropriate abstractuserinputactions.
-		for (Iterator<String> fileDataIterator = importedFileData.listIterator(); fileDataIterator.hasNext();)
-		{
-			String line = fileDataIterator.next();
-			
-			try
-			{
-				processedActionData.add(createInputActionByParsing(line));
-			}
-			catch (UnsupportedDataTypeException | DataFormatException | IllegalArgumentException ex) 
-			{
-				throw new DataFormatException("Cancelled data import on line " + importedFileData.indexOf(line) + " because ==> "+ ex.getMessage());
-			}
-		}
-		
-		return processedActionData;
+		// Convert string data into action data and return.
+		return convertToActionData(new LinkedList<String>(importedFileData));
 	}
 	
 	/**
