@@ -81,8 +81,6 @@ public class GlobalMouseInputTracker implements NativeMouseInputListener
 		
 		// Add the formatted string to the queue.
 		actionsQueue.add(actionToFormattedString);
-		
-		System.out.println(actionToFormattedString);
 	}
 
 	/**
@@ -111,8 +109,6 @@ public class GlobalMouseInputTracker implements NativeMouseInputListener
 		
 		// Add the formatted string to the queue.
 		actionsQueue.add(actionToFormattedString);
-		
-		System.out.println(actionToFormattedString);
 	}
 
 	/**
@@ -129,8 +125,6 @@ public class GlobalMouseInputTracker implements NativeMouseInputListener
 		
 		// Add the formatted string to the queue.
 		actionsQueue.add(actionToFormattedString);
-		
-		System.out.println(actionToFormattedString);
 	}
 
 	/**
@@ -147,8 +141,6 @@ public class GlobalMouseInputTracker implements NativeMouseInputListener
 		
 		// Add the formatted string to the queue.
 		actionsQueue.add(actionToFormattedString);
-		
-		System.out.println(actionToFormattedString);
 	}
 	
 	@Override

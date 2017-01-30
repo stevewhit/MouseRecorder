@@ -117,8 +117,6 @@ public class GlobalKeyTracker implements NativeKeyListener
 		
 		// Add the formatted string to the queue.
 		actionsQueue.add(actionToFormattedString);
-		
-		System.out.println(actionToFormattedString);
 	}
 
 	/**
@@ -145,8 +143,6 @@ public class GlobalKeyTracker implements NativeKeyListener
 		
 		// Add the formatted string to the queue.
 		actionsQueue.add(actionToFormattedString);
-		
-		System.out.println(actionToFormattedString);
 	}
 
 	/**
