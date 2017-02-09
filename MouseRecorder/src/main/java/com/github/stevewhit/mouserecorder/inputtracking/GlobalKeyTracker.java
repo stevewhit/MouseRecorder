@@ -4,6 +4,9 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Queue;
+
+import javax.swing.JTextArea;
+
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -14,12 +17,14 @@ public class GlobalKeyTracker implements NativeKeyListener
 	/**
 	 * Typical format for key press: keyNumber, time(in nanoseconds)
 	 */
-	private final static String KEY_PRESS_FORMAT = "KPRESS:%1$d:%2$s";
+	private final static String KEY_PRESS_FORMAT_COMPACT = "KPRESS:%1$d:%2$s";
+	private final static String KEY_PRESS_FORMAT_READABLE = "\nKey Pressed: '%1$s'";
 	
 	/**
 	 * Typical format for key release: keyNumber, time(in nanoseconds)
 	 */
-	private final static String KEY_RELEASE_FORMAT = "KRELEA:%1$d:%2$s";
+	private final static String KEY_RELEASE_FORMAT_COMPACT = "KRELEA:%1$d:%2$s";
+	private final static String KEY_RELEASE_FORMAT_READABLE = "\nKey Released: '%1$s'";
 	
 	/**
 	 * A reference to the queue that contains the input actions./
@@ -37,6 +42,12 @@ public class GlobalKeyTracker implements NativeKeyListener
 	private ArrayList<Integer> pressedKeys;
 	
 	/**
+	 * A reference to the text area that the recorded actions should be written to.
+	 * This is an optional field and will only write to it if it isn't null.
+	 */
+	private JTextArea optionalOutputTextArea;
+	
+	/**
 	 * Constructor that accepts a reference to the actions queue that the generated mouse clicks are added to and an array of cancellation keys. 
 	 * The default cancellation keys are set to ALT+R
 	 * @param actionsQueueRef The queue of actions that clicks are added to.
@@ -44,6 +55,19 @@ public class GlobalKeyTracker implements NativeKeyListener
 	 * @throws IllegalArgumentException Throws if the queue is null.
 	 */
 	protected GlobalKeyTracker(Queue<String> actionsQueue, int[] cancellationKeys) throws IllegalArgumentException
+	{
+		this(actionsQueue, null, cancellationKeys);
+	}
+	
+	/**
+	 * Constructor that accepts a reference to the actions queue that the generated mouse clicks are added to and an array of cancellation keys. 
+	 * The default cancellation keys are set to ALT+R
+	 * @param actionsQueueRef The queue of actions that clicks are added to.
+	 * @param optionalOutputTextArea An optional textArea that will only be written to if it isn't null.
+	 * @param cancellationKeys An array of integer values which represent KeyEvent integers, used to cancel the recorder.
+	 * @throws IllegalArgumentException Throws if the queue is null.
+	 */
+	protected GlobalKeyTracker(Queue<String> actionsQueue, JTextArea optionalOutputTextArea, int[] cancellationKeys) throws IllegalArgumentException
 	{
 		if (actionsQueue == null)
 		{
@@ -61,6 +85,7 @@ public class GlobalKeyTracker implements NativeKeyListener
 		}
 		
 		this.actionsQueue = actionsQueue;
+		this.optionalOutputTextArea = optionalOutputTextArea;
 		
 		pressedKeys = new ArrayList<Integer>();
 		
@@ -107,10 +132,15 @@ public class GlobalKeyTracker implements NativeKeyListener
 			}
 		}
 		
-		final String actionToFormattedString = String.format(KEY_PRESS_FORMAT, key, timeCaptured);
+		final String actionToFormattedString = String.format(KEY_PRESS_FORMAT_COMPACT, key, timeCaptured);
 		
 		// Add the formatted string to the queue.
 		actionsQueue.add(actionToFormattedString);
+		
+		if (optionalOutputTextArea != null)
+		{
+			optionalOutputTextArea.append(String.format(KEY_PRESS_FORMAT_READABLE, NativeKeyEvent.getKeyText(e.getKeyCode())));
+		}
 	}
 
 	/**
@@ -139,10 +169,15 @@ public class GlobalKeyTracker implements NativeKeyListener
 			}
 		}
 		
-		final String actionToFormattedString = String.format(KEY_RELEASE_FORMAT, key, timeCaptured);
+		final String actionToFormattedString = String.format(KEY_RELEASE_FORMAT_COMPACT, key, timeCaptured);
 		
 		// Add the formatted string to the queue.
 		actionsQueue.add(actionToFormattedString);
+
+		if (optionalOutputTextArea != null)
+		{
+			optionalOutputTextArea.append(String.format(KEY_RELEASE_FORMAT_READABLE, NativeKeyEvent.getKeyText(e.getKeyCode())));
+		}
 	}
 
 	/**
@@ -197,7 +232,7 @@ public class GlobalKeyTracker implements NativeKeyListener
 			{
 				Integer cancelKey = cancellationKeysIterator.next();
 				
-				final String actionToFormattedString = String.format(KEY_RELEASE_FORMAT, cancelKey, System.nanoTime());
+				final String actionToFormattedString = String.format(KEY_RELEASE_FORMAT_COMPACT, cancelKey, System.nanoTime());
 				
 				// Add the formatted string to the queue.
 				actionsQueue.add(actionToFormattedString);
