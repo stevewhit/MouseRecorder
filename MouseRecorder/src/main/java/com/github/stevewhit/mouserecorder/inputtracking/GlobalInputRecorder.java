@@ -34,6 +34,14 @@ public class GlobalInputRecorder
 	}
 	
 	/**
+	 * Re-initializes the last recording values so they aren't re-added to the recording list.
+	 */
+	public void resetLastRecordingValues()
+	{
+		lastRecordingValues = new LinkedList<String>();
+	}
+	
+	/**
 	 * Records user mouse and keyboard actions and stores each of them in a queue via a formatted string representation.
 	 * The default cancellation keys for this recording are ALT+R.
 	 * @return Returns a queue of formatted strings that represent the actions that took place during the recording.
