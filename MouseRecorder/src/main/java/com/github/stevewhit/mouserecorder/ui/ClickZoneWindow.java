@@ -23,6 +23,11 @@ import javax.swing.JPanel;
 public class ClickZoneWindow extends JFrame
 {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8695937812379099402L;
+
+	/**
 	 * A constructor that creates a click zone window with the option to choose a transparent background or a semi-transparent red background. 
 	 * By default, the window will be placed in the center of the screen.
 	 * @param showTransparentMode Indicates if the window should be fully transparent or semi-transparent.

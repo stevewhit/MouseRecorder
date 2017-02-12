@@ -20,4 +20,15 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 	</natures>
+	<filteredResources>
+		<filter>
+			<id>1485792076051</id>
+			<name>src/lib</name>
+			<type>5</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-JNativeHook.jar</arguments>
+			</matcher>
+		</filter>
+	</filteredResources>
 </projectDescription>
