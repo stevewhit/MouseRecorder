@@ -69,6 +69,18 @@ public class ClickZoneWindow extends JFrame
 	}
 	
 	/**
+	 * Returns this window as a formatted string representation.
+	 * <pre>
+	 * Example output: 'CZONEE:150:100:250:350'
+	 * </pre>
+	 * @return Returns this window as an exportable string.
+	 */
+	public String toExportableString()
+	{
+		return String.format("CZONEE:%1$d:%2$d:%3$d:%4$d", getLocation().getX(), getLocation().getY(), getSize().getWidth(), getSize().getHeight());
+	}
+	
+	/**
 	 * A rectangle JPanel with the option to make the panel fully transparent or semi-transparent.
 	 * @author Steve Whitmire (swhit114@gmail.com)
 	 *
