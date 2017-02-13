@@ -55,12 +55,6 @@ public class ClickZoneWindow extends JFrame
 		setAlwaysOnTop(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		// Try to set the dimensions of the window.
-		if (windowDimensions == null)
-			setPreferredSize(new Dimension(150, 150));
-		else
-			setPreferredSize(windowDimensions);
-		
 		// Try and set the location of the window
 		if (windowLocation == null)
 			setLocationRelativeTo(null);
@@ -68,7 +62,7 @@ public class ClickZoneWindow extends JFrame
 			setLocation(windowLocation);
 		
 		// Add the Rectangle to the viewer
-		getContentPane().add(new RectanglePane(showTransparentMode, this));
+		getContentPane().add(new RectanglePane(showTransparentMode, this, windowDimensions));
 
 		pack();
 		setVisible(true);
@@ -101,7 +95,7 @@ public class ClickZoneWindow extends JFrame
 		 * @param showTransparentMode Variable to indicate if the panel should be transparent or not.
 		 * @param parentFrame The frame that this jpanel is added to.
 		 */
-		public RectanglePane(boolean showTransparentMode, JFrame parentFrame)
+		public RectanglePane(boolean showTransparentMode, JFrame parentFrame, Dimension preferredSize)
 		{
 			this.parentFrame = parentFrame;
 			
@@ -109,6 +103,12 @@ public class ClickZoneWindow extends JFrame
 			setBackground(new Color(200, 150, 150));
 		    setOpaque(false);
             setLayout(new GridBagLayout());
+            
+            // Try to set the dimensions of the window.
+    		if (preferredSize == null)
+    			setPreferredSize(new Dimension(150, 150));
+    		else
+    			setPreferredSize(preferredSize);
             
             // Show the transparent or not, jpanel.
             setViewMode(showTransparentMode);
@@ -139,11 +139,6 @@ public class ClickZoneWindow extends JFrame
 			// Repaints this jpanel to include the transparency options in the drawing.
 			this.repaint();
 		}
-		
-		//@Override
-       // public Dimension getPreferredSize() {
-        //    return new Dimension(150, 150);
-        //}
 
         @Override
         protected void paintComponent(Graphics g) {
