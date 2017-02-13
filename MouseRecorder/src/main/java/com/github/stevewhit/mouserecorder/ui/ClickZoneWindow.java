@@ -34,7 +34,7 @@ public class ClickZoneWindow extends JFrame
 	 */
 	public ClickZoneWindow(boolean showTransparentMode)
 	{
-		this(showTransparentMode, null);
+		this(showTransparentMode, null, null);
 	}
 	
 	/**
@@ -42,8 +42,9 @@ public class ClickZoneWindow extends JFrame
 	 * at the given window location.
 	 * @param showTransparentMode Indicates if the window should be fully transparent or semi-transparent.
 	 * @param windowLocation The location of the top left corner of the window.
+	 * @param windowDimensions The preferred size of the click zone frame.
 	 */
-	public ClickZoneWindow(boolean showTransparentMode, Point windowLocation)
+	public ClickZoneWindow(boolean showTransparentMode, Point windowLocation, Dimension windowDimensions)
 	{
 		// Makes it so that the window doesn't show up in task bar.
 		setType(Type.UTILITY);
@@ -53,6 +54,12 @@ public class ClickZoneWindow extends JFrame
 		setBackground(new Color(0, 0, 0, 0));
 		setAlwaysOnTop(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		// Try to set the dimensions of the window.
+		if (windowDimensions == null)
+			setPreferredSize(new Dimension(150, 150));
+		else
+			setPreferredSize(windowDimensions);
 		
 		// Try and set the location of the window
 		if (windowLocation == null)
@@ -68,6 +75,15 @@ public class ClickZoneWindow extends JFrame
 	}
 		
 	/**
+	 * Returns the current dimensions of the window.
+	 * @return Returns the current dimensions of the window as a Dimensions object.
+	 */
+	public Dimension getWindowDimensions()
+	{
+		return this.getSize();
+	}
+	
+	/**
 	 * A rectangle JPanel with the option to make the panel fully transparent or semi-transparent.
 	 * @author Steve Whitmire (swhit114@gmail.com)
 	 *
@@ -77,7 +93,7 @@ public class ClickZoneWindow extends JFrame
 		/**
 		 * The serial version UID used on dispose.
 		 */
-		private static final long serialVersionUID = 13425L;
+		private static final long serialVersionUID = 64654321651L;
 		
 		/**
 		 * Variable to indicate if the panel should be transparent or not.
@@ -133,10 +149,10 @@ public class ClickZoneWindow extends JFrame
 			this.repaint();
 		}
 		
-		@Override
-        public Dimension getPreferredSize() {
-            return new Dimension(150, 150);
-        }
+		//@Override
+       // public Dimension getPreferredSize() {
+        //    return new Dimension(150, 150);
+        //}
 
         @Override
         protected void paintComponent(Graphics g) {
