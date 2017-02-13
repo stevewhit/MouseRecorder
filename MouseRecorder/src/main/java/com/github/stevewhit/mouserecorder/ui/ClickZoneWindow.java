@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -26,6 +27,11 @@ public class ClickZoneWindow extends JFrame
 	 * 
 	 */
 	private static final long serialVersionUID = -8695937812379099402L;
+	
+	/**
+	 * The rectangle pane that is used to draw the rectangle.
+	 */
+	private RectanglePane rectanglePane;
 
 	/**
 	 * A constructor that creates a click zone window with the option to choose a transparent background or a semi-transparent red background. 
@@ -54,18 +60,25 @@ public class ClickZoneWindow extends JFrame
 		setBackground(new Color(0, 0, 0, 0));
 		setAlwaysOnTop(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		// Try and set the location of the window
 		if (windowLocation == null)
 			setLocationRelativeTo(null);
 		else
 			setLocation(windowLocation);
 		
+		rectanglePane = new RectanglePane(showTransparentMode, this, windowDimensions);
+		
 		// Add the Rectangle to the viewer
-		getContentPane().add(new RectanglePane(showTransparentMode, this, windowDimensions));
+		getContentPane().add(rectanglePane);
 
 		pack();
 		setVisible(true);
+	}
+	
+	public RectanglePane getRectanglePane()
+	{
+		return rectanglePane;
 	}
 	
 	/**
@@ -77,7 +90,7 @@ public class ClickZoneWindow extends JFrame
 	 */
 	public String toExportableString()
 	{
-		return String.format("CZONEE:%1$d:%2$d:%3$d:%4$d", getLocation().getX(), getLocation().getY(), getSize().getWidth(), getSize().getHeight());
+		return String.format("CZONEE:%1$d:%2$d:%3$d:%4$d", (int)getLocation().getX(), (int)getLocation().getY(), (int)getSize().getWidth(), (int)getSize().getHeight());
 	}
 	
 	/**
@@ -85,7 +98,7 @@ public class ClickZoneWindow extends JFrame
 	 * @author Steve Whitmire (swhit114@gmail.com)
 	 *
 	 */
-	private class RectanglePane extends JPanel
+	protected class RectanglePane extends JPanel
 	{
 		/**
 		 * The serial version UID used on dispose.
@@ -168,7 +181,7 @@ public class ClickZoneWindow extends JFrame
             	g2d.fillRect(0, 0, getWidth(), getHeight());				// comment this for click-through
             }
             
-            g2d.setColor(Color.BLACK);
+            g2d.setColor(new Color(255, 0, 0));
             g2d.setStroke(new BasicStroke(3));
             g2d.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
             g2d.dispose();
