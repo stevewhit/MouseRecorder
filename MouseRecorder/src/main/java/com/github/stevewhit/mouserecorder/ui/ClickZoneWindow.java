@@ -6,7 +6,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -40,17 +39,18 @@ public class ClickZoneWindow extends JFrame
 	 */
 	public ClickZoneWindow(boolean showTransparentMode)
 	{
-		this(showTransparentMode, null, null);
+		this(showTransparentMode, showTransparentMode, null, null);
 	}
 	
 	/**
 	 * A constructor that creates a click-zone window with the option to choose a transparent background or a semi-transparent red background
 	 * at the given window location.
 	 * @param showTransparentMode Indicates if the window should be fully transparent or semi-transparent.
+	 * @param lockPlacementAndSize Indicates if the window will allow the user to resize and move the window.
 	 * @param windowLocation The location of the top left corner of the window.
 	 * @param windowDimensions The preferred size of the click zone frame.
 	 */
-	public ClickZoneWindow(boolean showTransparentMode, Point windowLocation, Dimension windowDimensions)
+	public ClickZoneWindow(boolean showTransparentMode, boolean lockPlacementAndSize, Point windowLocation, Dimension windowDimensions)
 	{
 		// Makes it so that the window doesn't show up in task bar.
 		setType(Type.UTILITY);
@@ -67,7 +67,7 @@ public class ClickZoneWindow extends JFrame
 		else
 			setLocation(windowLocation);
 		
-		rectanglePane = new RectanglePane(showTransparentMode, this, windowDimensions);
+		rectanglePane = new RectanglePane(showTransparentMode, lockPlacementAndSize, this, windowDimensions);
 		
 		// Add the Rectangle to the viewer
 		getContentPane().add(rectanglePane);
@@ -118,14 +118,20 @@ public class ClickZoneWindow extends JFrame
 		/**
 		 * Constructor that indicates whether the jpanel should be transparent or not and it identifies the jframe that this panel is added to.
 		 * @param showTransparentMode Variable to indicate if the panel should be transparent or not.
+		 * @param lockPlacementAndSize Enables or disables the user's ability to move and resize the window.
 		 * @param parentFrame The frame that this jpanel is added to.
+		 * @param preferredSize The preferred size of the rectangle panel.
 		 */
-		public RectanglePane(boolean showTransparentMode, JFrame parentFrame, Dimension preferredSize)
+		public RectanglePane(boolean showTransparentMode, boolean lockPlacementAndSize, JFrame parentFrame, Dimension preferredSize)
 		{
 			this.parentFrame = parentFrame;
 			
 			// Jpanel initialization.
-			setBackground(new Color(200, 150, 150));
+			if (lockPlacementAndSize)
+				setBackground(new Color(200, 150, 150));
+			else
+				setBackground(new Color(150, 200, 200));
+			
 		    setOpaque(false);
             setLayout(new GridBagLayout());
             
@@ -136,13 +142,13 @@ public class ClickZoneWindow extends JFrame
     			setPreferredSize(preferredSize);
             
             // Show the transparent or not, jpanel.
-            setViewMode(showTransparentMode);
+            setViewMode(showTransparentMode, lockPlacementAndSize);
            
             // Add mouse listeners to dispose, resize, and move the frame only if we're
             // not in transparent mode.
             if (!showTransparentMode)
             {            
-            	MouseMoveListener mouseListener = new MouseMoveListener(this, this.parentFrame);
+            	MouseMoveListener mouseListener = new MouseMoveListener(this, this.parentFrame, lockPlacementAndSize);
             	addMouseListener(mouseListener);
             	addMouseMotionListener(mouseListener);
             }
@@ -151,8 +157,9 @@ public class ClickZoneWindow extends JFrame
 		/**
 		 * Updates the showtransparentmode variable and the tooltiptext of the jpanel.
 		 * @param showTransparentMode Variable to indicate if the panel should be transparent or not.
+		 * @param lockPlacementAndSize Enables or disables the user's ability to move and resize the window.
 		 */
-		public void setViewMode(boolean showTransparentMode)
+		public void setViewMode(boolean showTransparentMode, boolean lockPlacementAndSize)
 		{
 			this.showTransparentMode = showTransparentMode;
 			
@@ -162,7 +169,10 @@ public class ClickZoneWindow extends JFrame
 			}
 			else
 			{
-				setToolTipText("<html>Double-Click LEFT mouse button to shrink.<br/>Double-Click RIGHT Mouse button to enlarge.<br/>Double-Click Scroll Wheel to close.</html>");
+				if (!lockPlacementAndSize)
+					setToolTipText("<html>Double-Click LEFT mouse button to shrink.<br/>Double-Click RIGHT Mouse button to enlarge.<br/>Double-Click Scroll Wheel to close.</html>");
+				else
+					setToolTipText("<html>Double-Click Scroll Wheel to close.</html>");
 			}
 			
 			// Repaints this jpanel to include the transparency options in the drawing.
@@ -216,38 +226,47 @@ public class ClickZoneWindow extends JFrame
 		private Point startDragLocation;
 		
 		/**
+		 * Enables or disables the user's ability to move and resize the window.
+		 */
+		private boolean lockPlacementAndSize;
+		
+		/**
 		 * Constructor that accepts parameters indicating relationships of components that are used by this listener.
 		 * @param target The rectangle panel that this mouse listener applies to.
 		 * @param parentFrame The frame that the rectangle panel is added to. 
-		 * @param userCanManipulateWindow Enables or disables options to allow the user to dispose, move, or resize the frame.
+		 * @param lockPlacementAndSize Enables or disable the user's ability to move and resize the window.
 		 */
-		public MouseMoveListener(JComponent target, JFrame parentFrame)
+		public MouseMoveListener(JComponent target, JFrame parentFrame, boolean lockPlacementAndSize)
 		{
 			this.target = target;
 			this.parentFrame = parentFrame;
+			this.lockPlacementAndSize = lockPlacementAndSize;
 		}
 
 		@Override
 		public void mouseDragged(MouseEvent e)
 		{
-    	    Point current = this.getScreenLocation(e);
-    	    
-    	    Point offset = new Point(
-    	    			(int) current.getX() - (int) startDragPoint.getX(),
-    	    			(int) current.getY() - (int) startDragPoint.getY());
-
-    	    Point new_location = new Point(
-    	    			(int)(this.startDragLocation.getX() + offset.getX()), 
-    	    			(int)(this.startDragLocation.getY() + offset.getY()));
-    	    
-    	    parentFrame.setLocation(new_location);
+			if (!lockPlacementAndSize)
+			{
+	    	    Point current = this.getScreenLocation(e);
+	    	    
+	    	    Point offset = new Point(
+	    	    			(int) current.getX() - (int) startDragPoint.getX(),
+	    	    			(int) current.getY() - (int) startDragPoint.getY());
+	
+	    	    Point new_location = new Point(
+	    	    			(int)(this.startDragLocation.getX() + offset.getX()), 
+	    	    			(int)(this.startDragLocation.getY() + offset.getY()));
+	    	    
+	    	    parentFrame.setLocation(new_location);
+			}
     	}
 
 		@Override
 		public void mouseClicked(MouseEvent e)
 		{
 			// Left Mouse Click
-			if (e.getButton() == 1 && e.getClickCount() >= 2)
+			if (!lockPlacementAndSize && e.getButton() == 1 && e.getClickCount() >= 2)
 			{
 				if (target.getParent().getSize().getWidth() > 75 && target.getParent().getSize().getHeight() > 75)
 				{
@@ -263,7 +282,7 @@ public class ClickZoneWindow extends JFrame
 				parentFrame.dispose();
 			}
 			// Right Mouse Click
-			else if (e.getButton() == 3 && e.getClickCount() >= 2)
+			else if (!lockPlacementAndSize && e.getButton() == 3 && e.getClickCount() >= 2)
 			{
 				Dimension biggerSize = new Dimension((int)target.getParent().getSize().getWidth() + 50, (int)target.getParent().getSize().getHeight() + 50);
 			
@@ -279,36 +298,31 @@ public class ClickZoneWindow extends JFrame
 		@Override
 		public void mousePressed(MouseEvent e)
 		{
-    	    this.startDragPoint = this.getScreenLocation(e);
-    	    this.startDragLocation = parentFrame.getLocation();
+			if (!lockPlacementAndSize)
+			{
+	    	    this.startDragPoint = this.getScreenLocation(e);
+	    	    this.startDragLocation = parentFrame.getLocation();
+			}
     	}
 
 		@Override
 		public void mouseMoved(MouseEvent e)
 		{
-			// TODO Auto-generated method stub
-			
 		}
 		
 		@Override
 		public void mouseReleased(MouseEvent e)
 		{
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void mouseEntered(MouseEvent e)
 		{
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e)
 		{
-			// TODO Auto-generated method stub
-			
 		}
 		
 		/**
