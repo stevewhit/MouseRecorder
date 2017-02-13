@@ -41,6 +41,11 @@ public class ActionDataHandlerUtilsTest
 		}
 		
 		exportedItems = new LinkedList<String>();
+		exportedItems.add("CZONEE:698:413:50:50");
+		exportedItems.add("CZONEE:754:415:100:100");
+		exportedItems.add("CZONEE:860:417:150:150");
+		exportedItems.add("CZONEE:1015:418:200:200");
+		
 		exportedItems.add("MMOVED:469:76:548171866216160");
 		exportedItems.add("KPRESS:17:548174113763558");
 		exportedItems.add("KRELEA:17:548174760943927");
@@ -49,6 +54,8 @@ public class ActionDataHandlerUtilsTest
 		exportedItems.add("MPRESS:2:469:76:1399149:548181397050226");
 		exportedItems.add("MRELEA:2:469:76:1399149:548181525054397");
 		exportedItems.add("KPRESS:18:548187439805729");
+		
+		exportedItems.add("CZONEE:1222:417:250:250");
 		
 		ActionDataHandlerUtils.exportStringDataToFile(exportedItems, saveLocation);
 	}
@@ -145,6 +152,68 @@ public class ActionDataHandlerUtilsTest
 	}
 
 	//=======================================================
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testExtractClickZonestringData_nullList() throws IllegalArgumentException, DataFormatException
+	{
+		ActionDataHandlerUtils.extractClickZoneStringData(null);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testExtractClickZonestringData_EmptyList() throws IllegalArgumentException, DataFormatException
+	{
+		ActionDataHandlerUtils.extractClickZoneStringData(new ArrayList<String>());
+	}
+	
+	@Test(expected=DataFormatException.class)
+	public void testExtractClickZonestringData_ContainsInvalidInfo() throws IllegalArgumentException, DataFormatException
+	{
+		exportedItems.add(null);
+		ActionDataHandlerUtils.extractClickZoneStringData(new ArrayList<>(exportedItems));
+	}
+
+	@Test
+	public void testExtractClickZonestringData_Valid() throws IllegalArgumentException, DataFormatException
+	{
+		ArrayList<String> expectedList = new ArrayList<>();
+		expectedList.add("CZONEE:698:413:50:50");
+		expectedList.add("CZONEE:754:415:100:100");
+		expectedList.add("CZONEE:860:417:150:150");
+		expectedList.add("CZONEE:1015:418:200:200");
+		expectedList.add("CZONEE:1222:417:250:250");
+		
+		assertEquals(expectedList, ActionDataHandlerUtils.extractClickZoneStringData(new ArrayList<>(exportedItems)));
+		assertTrue(ActionDataHandlerUtils.extractClickZoneStringData(new ArrayList<>(exportedItems)).size() == 5);
+	}
+	
+	//=======================================================
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testExtractInputActionStringData_nullList() throws IllegalArgumentException, DataFormatException
+	{
+		ActionDataHandlerUtils.extractInputActionStringData(null);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testExtractInputActionStringData_EmptyList() throws IllegalArgumentException, DataFormatException
+	{
+		ActionDataHandlerUtils.extractInputActionStringData(new ArrayList<String>());
+	}
+	
+	@Test(expected=DataFormatException.class)
+	public void testExtractInputActionStringData_ContainsInvalidInfo() throws IllegalArgumentException, DataFormatException
+	{
+		exportedItems.add(null);
+		ActionDataHandlerUtils.extractInputActionStringData(new ArrayList<>(exportedItems));
+	}
+
+	@Test
+	public void testExtractInputActionStringData_Valid() throws IllegalArgumentException, DataFormatException
+	{
+		assertTrue(ActionDataHandlerUtils.extractInputActionStringData(new ArrayList<>(exportedItems)).size() == 8);
+	}
+	
+	//=======================================================
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testConvertToActionData_nullList() throws IllegalArgumentException, DataFormatException
@@ -182,7 +251,7 @@ public class ActionDataHandlerUtilsTest
 	@Test
 	public void testConvertToActionData_Valid() throws IllegalArgumentException, IOException, DataFormatException
 	{
-		Queue<AbstractInputAction> convertedActions = ActionDataHandlerUtils.convertToActionData(exportedItems);
+		Queue<AbstractInputAction> convertedActions = ActionDataHandlerUtils.convertToActionData(new LinkedList<>(ActionDataHandlerUtils.extractInputActionStringData(new ArrayList<>(exportedItems))));
 		
 		assertTrue(convertedActions.size() == 8);
 		assertTrue(convertedActions.peek() instanceof MouseMove);
@@ -226,6 +295,18 @@ public class ActionDataHandlerUtilsTest
 		assertTrue(importedActions.size() == 8);
 		assertTrue(importedActions.peek() instanceof MouseMove);
 		assertTrue(importedActions.toArray()[7] instanceof KeyboardKeyPress);
+	}
+
+	//=======================================================
+	
+	@Test
+	public void testImportClickZoneDataFromFile_Valid() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		ArrayList<String> importedActions = ActionDataHandlerUtils.importClickZoneDataFromFile(saveLocation);
+		
+		assertTrue(importedActions.size() == 5);
+		assertTrue(importedActions.get(0).equals("CZONEE:698:413:50:50"));
+		assertTrue(importedActions.get(4).equals("CZONEE:1222:417:250:250"));
 	}
 
 	//=======================================================

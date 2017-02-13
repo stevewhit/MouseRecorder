@@ -152,6 +152,74 @@ public class ActionDataHandlerUtils
 	}
 	
 	/**
+	 * Extracts click zone data from a list of string data.
+	 * @param stringDataList A list of data that is imported from a file.
+	 * @return Returns a list of all the click zone entries from the given arraylist.
+	 * @throws IllegalArgumentException Throws if the data list is null or empty.
+	 * @throws DataFormatException Throws if an invalid line is present in the string data list.
+	 */
+	public static ArrayList<String> extractClickZoneStringData(ArrayList<String> stringDataList) throws IllegalArgumentException, DataFormatException
+	{
+		if (stringDataList == null || stringDataList.isEmpty())
+		{
+			throw new IllegalArgumentException("Imported string data is null or empty.");
+		}
+		
+		final ArrayList<String> extractedClickZoneData = new ArrayList<String>();
+		
+		for (String stringData : stringDataList)
+		{
+			try
+			{
+				String[] splitLine = stringData.split(":");
+			
+				if (splitLine[0].toUpperCase().equals("CZONEE"))
+					extractedClickZoneData.add(stringData);
+			}		
+			catch (IndexOutOfBoundsException | NullPointerException ex)
+			{
+				throw new DataFormatException("Could not access necessary information when parsing click zone information.");
+			}
+		}
+		
+		return extractedClickZoneData;
+	}
+	
+	/**
+	 * Extracts input action data from a list of string data.
+	 * @param stringDataList A list of data that is imported from a file.
+	 * @return Returns a list of all the input action data entries from the given arraylist.
+	 * @throws IllegalArgumentException Throws if the data list is null or empty.
+	 * @throws DataFormatException Throws if an invalid line is present in the string data list.
+	 */
+	public static ArrayList<String> extractInputActionStringData(ArrayList<String> stringDataList) throws IllegalArgumentException, DataFormatException
+	{
+		if (stringDataList == null || stringDataList.isEmpty())
+		{
+			throw new IllegalArgumentException("Imported string data is null or empty.");
+		}
+		
+		final ArrayList<String> extractedInputActionData = new ArrayList<String>();
+		
+		for (String stringData : stringDataList)
+		{
+			try
+			{
+				String[] splitLine = stringData.split(":");
+			
+				if (!splitLine[0].toUpperCase().equals("CZONEE"))
+					extractedInputActionData.add(stringData);
+			}		
+			catch (IndexOutOfBoundsException | NullPointerException ex)
+			{
+				throw new DataFormatException("Could not access necessary information when parsing click zone information.");
+			}
+		}
+		
+		return extractedInputActionData;
+	}
+	
+	/**
 	 * Converts a list of string action data into a queue of abstract input actions.
 	 * @param stringActionData A list of action data with string representations.
 	 * @return Returns the same list but represented as abstract input actions.
@@ -187,20 +255,34 @@ public class ActionDataHandlerUtils
 	}
 	
 	/**
-	 * Imports all data from a file into an arraylist of input actions.
+	 * Imports all input action data from a file into an arraylist of input actions.
 	 * @param fileLocation The system path where the file is stored.
-	 * @return Returns the file represented as a list of input actions. Each entry in the list is a line in the file.
+	 * @return Returns the input action data from a file represented as a list of input actions. Each entry in the list is a line in the file.
 	 * @throws IllegalArgumentException Throws if the file location is null or empty.
 	 * @throws IOException Throws if the file doesn't exist or if there's an issue reading information from the file.
 	 * @throws DataFormatException Throws if the data in the file doesn't conform to the pre-existing input action structures.
 	 */
 	public static Queue<AbstractInputAction> importActionDataFromFile(String fileLocation) throws IllegalArgumentException, IOException, DataFormatException
 	{
-		// Store the string data in the file in a list.
-		ArrayList<String> importedFileData = importStringDataFromFile(fileLocation);
+		// Import data from the file and extract only the input action string data.
+		ArrayList<String> importedInputActionData = extractInputActionStringData(importStringDataFromFile(fileLocation));
 				
 		// Convert string data into action data and return.
-		return convertToActionData(new LinkedList<String>(importedFileData));
+		return convertToActionData(new LinkedList<String>(importedInputActionData));
+	}
+	
+	/**
+	 * Imports only click zone data and returns it as a list of strings.
+	 * @param fileLocation The system path where the file is stored.
+	 * @return Returns the click zone data from a file represented as a list of Strings. Each entry in the list is a line in the file.
+	 * @throws IllegalArgumentException Throws if the file location is null or empty.
+	 * @throws IOException Throws if the file doesn't exist or if there's an issue reading information from the file.
+	 * @throws DataFormatException Throws if the data in the file doesn't conform to the pre-existing data structures.
+	 */
+	public static ArrayList<String> importClickZoneDataFromFile(String fileLocation) throws IllegalArgumentException, IOException, DataFormatException
+	{
+		// Import data from the file and extract only the click zone window information.
+		return extractClickZoneStringData(importStringDataFromFile(fileLocation));
 	}
 	
 	/**
