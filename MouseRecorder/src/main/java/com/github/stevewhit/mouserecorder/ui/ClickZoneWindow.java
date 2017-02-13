@@ -113,10 +113,14 @@ public class ClickZoneWindow extends JFrame
             // Show the transparent or not, jpanel.
             setViewMode(showTransparentMode);
            
-            // Adding mouse listeners
-            MouseMoveListener mouseListener = new MouseMoveListener(this, this.parentFrame, !showTransparentMode);
-            addMouseListener(mouseListener);
-            addMouseMotionListener(mouseListener);
+            // Add mouse listeners to dispose, resize, and move the frame only if we're
+            // not in transparent mode.
+            if (!showTransparentMode)
+            {            
+            	MouseMoveListener mouseListener = new MouseMoveListener(this, this.parentFrame);
+            	addMouseListener(mouseListener);
+            	addMouseMotionListener(mouseListener);
+            }
 	    }
 		
 		/**
@@ -187,21 +191,15 @@ public class ClickZoneWindow extends JFrame
 		private Point startDragLocation;
 		
 		/**
-		 * Enables or disables options to allow the user to dispose the frame.
-		 */
-		private boolean userCanDisposeFrame;
-		
-		/**
 		 * Constructor that accepts parameters indicating relationships of components that are used by this listener.
 		 * @param target The rectangle panel that this mouse listener applies to.
 		 * @param parentFrame The frame that the rectangle panel is added to. 
-		 * @param userCanDisposeFrame Enables or disables options to allow the user to dispose the frame.
+		 * @param userCanManipulateWindow Enables or disables options to allow the user to dispose, move, or resize the frame.
 		 */
-		public MouseMoveListener(JComponent target, JFrame parentFrame, boolean userCanDisposeFrame)
+		public MouseMoveListener(JComponent target, JFrame parentFrame)
 		{
 			this.target = target;
 			this.parentFrame = parentFrame;
-			this.userCanDisposeFrame = userCanDisposeFrame;
 		}
 
 		@Override
@@ -237,10 +235,7 @@ public class ClickZoneWindow extends JFrame
 			// Scroll Wheel Mouse click
 			else if (e.getButton() == 2 && e.getClickCount() >= 2)
 			{
-				if (userCanDisposeFrame)
-				{
-					parentFrame.dispose();
-				}
+				parentFrame.dispose();
 			}
 			// Right Mouse Click
 			else if (e.getButton() == 3 && e.getClickCount() >= 2)
