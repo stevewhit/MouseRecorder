@@ -73,15 +73,6 @@ public class ClickZoneWindow extends JFrame
 		pack();
 		setVisible(true);
 	}
-		
-	/**
-	 * Returns the current dimensions of the window.
-	 * @return Returns the current dimensions of the window as a Dimensions object.
-	 */
-	public Dimension getWindowDimensions()
-	{
-		return this.getSize();
-	}
 	
 	/**
 	 * A rectangle JPanel with the option to make the panel fully transparent or semi-transparent.
