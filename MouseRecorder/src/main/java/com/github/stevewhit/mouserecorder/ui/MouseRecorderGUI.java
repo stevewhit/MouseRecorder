@@ -9,7 +9,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,7 +54,9 @@ import org.jnativehook.NativeHookException;
 import org.jnativehook.SwingDispatchService;
 import com.github.stevewhit.mouserecorder.datahandling.ActionDataHandlerUtils;
 import com.github.stevewhit.mouserecorder.inputtracking.GlobalInputRecorder;
+import com.github.stevewhit.mouserecorder.playback.PlaybackEngine;
 import com.github.stevewhit.mouserecorder.ui.PlaybackOptions.TimeQuantifier;
+import com.github.stevewhit.mouserecorder.userinputs.AbstractInputAction;
 
 public class MouseRecorderGUI extends JFrame implements WindowListener
 {
@@ -125,7 +126,10 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 	private final static String CURRENT_RECORDING_NAME = "Current Recording";
 	private ArrayList<PlaybackOptions> playbackOptionsList = new ArrayList<PlaybackOptions>();
 	private PlaybackOptions currentPlaybackOptions;
-		
+
+	/** Click Zones that were added to the recording **/
+	private ArrayList<ClickZoneWindow> addedClickZones = new ArrayList<ClickZoneWindow>();
+	
 	/** The Recording state of the program */
 	private RecordingStates currentRecordingState = RecordingStates.Disable;
 	
@@ -181,12 +185,10 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		
 		/** ADD ModeViewPanel to displayPanel**/
 		modeViewPanel = new JPanel(new GridBagLayout());
-		//modeViewPanel.setBorder(new TitledBorder("ModeViewPanel"));
-		
+
 		/** Add RecordingPanel to ModeViewPanel **/
 		recordingPanel = new JPanel(new GridBagLayout());
-		//recordingPanel.setBorder(new TitledBorder("Recorded Actions"));
-		
+
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.CENTER;
 		gbc.gridx = 0;
@@ -198,8 +200,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		
 		/** Add playbackPanel to ModeViewPanel  **/
 		playbackPanel = new JPanel(new GridBagLayout());
-		//playbackPanel.setBorder(new TitledBorder("PlaybackPanel"));
-		
+
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.CENTER;
 		gbc.gridx = 0;
@@ -449,7 +450,6 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		}
 		catch (ParseException e1)
 		{
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	
@@ -468,7 +468,6 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		}
 		catch (ParseException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -1079,7 +1078,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 					// Set a new look and feel so the click-zone window doesn't have a border.
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 					
-					ClickZoneWindow tempClickZoneWindow = new ClickZoneWindow(false, null); //Made`this`throw`an`error`on`purpose`
+					// Add click zone window with default location and dimensions.
+					addedClickZones.add(new ClickZoneWindow(false));
 					
 					// Reset the look and feel.
 					com.jtattoo.plaf.acryl.AcrylLookAndFeel.setTheme("Black", "", "");
@@ -1089,11 +1089,133 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 				catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 						| UnsupportedLookAndFeelException e)
 				{
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		});
+	}
+	
+	/**
+	 * Hides all click zone windows from the view.
+	 */
+	private void hideClickZones()
+	{
+		if (addedClickZones == null)
+			addedClickZones = new ArrayList<ClickZoneWindow>();
+		
+		for (ClickZoneWindow window : addedClickZones)
+		{
+			window.setVisible(false);
+		}
+	}
+	
+	/**
+	 * Makes all click zone windows visible.
+	 */
+	private void showClickZones()
+	{
+		if (addedClickZones == null)
+			addedClickZones = new ArrayList<ClickZoneWindow>();
+		
+		for (ClickZoneWindow window : addedClickZones)
+		{
+			window.setVisible(true);
+		}
+	}
+	
+	/**
+	 * Changes all click zone window transparency values and updates the cached list accordingly.
+	 * @param showAsTransparent True for windows to be transparent; otherwise false.
+	 * @param lockPlacementAndSizeOfWindows Enables or disables the user's ability to move and resize the windows.
+	 */
+	private void changeClickZoneTransparency(final boolean showAsTransparent, final boolean lockPlacementAndSizeOfWindows)
+	{
+		if (addedClickZones == null)
+			addedClickZones = new ArrayList<ClickZoneWindow>();
+		
+		final ArrayList<ClickZoneWindow> visibleWindows = new ArrayList<ClickZoneWindow>();
+		
+		for (final ClickZoneWindow window : addedClickZones)
+		{
+			// Make sure the window hasn't been disposed yet.
+			if (window != null && window.isDisplayable())
+			{
+				EventQueue.invokeLater(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						try
+						{
+							// Set a new look and feel so the click-zone window doesn't have a border.
+							UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+							
+							// Create click zone window with the same location and size but with updated transparency.
+							visibleWindows.add(new ClickZoneWindow(showAsTransparent, lockPlacementAndSizeOfWindows, window.getLocation(), window.getRectanglePane().getSize()));
+							
+							// Reset the look and feel.
+							com.jtattoo.plaf.acryl.AcrylLookAndFeel.setTheme("Black", "", "");
+							UIManager.setLookAndFeel("com.jtattoo.plaf.acryl.AcrylLookAndFeel");
+							
+						}
+						catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+								| UnsupportedLookAndFeelException e)
+						{
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		}
+		
+		// Dispose of the old click zones.
+		removeAllClickZones();
+		
+		// Update the list of click zones.
+		addedClickZones = visibleWindows;
+	}
+	
+	/**
+	 * Disposes of all click zone windows and removes them from the addedClickZone list.
+	 */
+	private void removeAllClickZones()
+	{
+		for(Iterator<ClickZoneWindow> windowIter = addedClickZones.listIterator(); windowIter.hasNext();)
+		{
+			ClickZoneWindow nextWindow = windowIter.next();
+			
+			// Dispose of the window
+			if (nextWindow != null)
+			{
+				nextWindow.dispose();
+			}
+			
+			// Remove the window from the list.
+			windowIter.remove();
+		}
+		
+		addedClickZones = new ArrayList<ClickZoneWindow>();
+	}
+	
+	/**
+	 * Returns the non-disposed click zone windows as a list of formatted string representations.
+	 * @return Returns the non-disposed click zone windows as a list of formatted string representations.
+	 */
+	private ArrayList<String> getExportableClickZoneList()
+	{
+		final ArrayList<String> exportableClickZoneWindows = new ArrayList<String>();
+
+		// Add each of the non-disposed windows as a formatted string.
+		for (ClickZoneWindow window : addedClickZones)
+		{
+			// Make sure the window hasn't been disposed.
+			if (window != null && window.isDisplayable())
+			{
+				exportableClickZoneWindows.add(window.toExportableString());
+			}
+		}
+		
+		return exportableClickZoneWindows;
 	}
 	
 	private void resetRecordingActionsTextArea(boolean promptUserToSave, boolean showFileChooser, boolean updatePlaybackQueue)
@@ -1140,19 +1262,22 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 						fileSaveLocation += ".txt";
 					}
 					
-					// Try and save the recorded actions to the designated file save location.
+					// Try and save the click zone info + recorded actions to the designated file save location.
 					try
 					{
-						ActionDataHandlerUtils.exportStringDataToFile(recordedActions, fileSaveLocation);
+						final LinkedList<String> exportData = new LinkedList<String>();
+						
+						// Add the click zone window data + recorded actions data.
+						exportData.addAll(getExportableClickZoneList());
+						exportData.addAll(recordedActions);
+						
+						ActionDataHandlerUtils.exportStringDataToFile(exportData, fileSaveLocation);
 					}
 					catch (IllegalArgumentException | IOException e)
 					{
 						JOptionPane.showMessageDialog(this, "Error occured trying to save recorded data to: " + fileSaveLocation);
+						return;
 					}
-					
-					// Reset text area and recorded actions.
-					recordingPanelRecordedActionsTextArea.setText(null);
-					recordedActions = new LinkedList<String>();
 					
 					// Update the playback queue
 					if (updatePlaybackQueue)
@@ -1180,6 +1305,9 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 			// Reset text area and recorded actions.
 			recordingPanelRecordedActionsTextArea.setText(null);
 			recordedActions = new LinkedList<String>();
+			
+			// Remove all click zone windows.
+			removeAllClickZones();
 
 			// Reset all the buttons
 			if (currentRecordingState != RecordingStates.Disable)
@@ -1252,11 +1380,9 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 			{
 				robot.keyRelease(stopKey);
 			}
-			
 		}
 		catch (AWTException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -1331,6 +1457,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 				iconSelectionClickZoneButton.setText("Zone");
 				iconSelectionClickZoneButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/shapesButton.png")));
 				iconSelectionClickZoneButton.setEnabled(false);
+				hideClickZones();
 				iconSelectionRecordPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/recordButton.png")));
 				iconSelectionRecordPauseResumeButton.setText("Record");
 				iconSelectionRecordPauseResumeButton.setEnabled(false);
@@ -1345,7 +1472,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 			case Enable:
 				iconSelectionClickZoneButton.setText("Zone");
 				iconSelectionClickZoneButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/shapesButton.png")));
-				iconSelectionClickZoneButton.setEnabled(recordingPanelRecordedActionsTextArea.getText().isEmpty());
+				iconSelectionClickZoneButton.setEnabled(true);
+				showClickZones();
 				iconSelectionRecordPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/recordButton.png")));
 				iconSelectionRecordPauseResumeButton.setText("Record");
 				iconSelectionRecordPauseResumeButton.setEnabled(true);
@@ -1358,6 +1486,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 				break;
 			// In record mode, show the pause button.
 			case Record:
+				changeClickZoneTransparency(true, true);
 				iconSelectionRecordPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/pauseButton.png")));
 				iconSelectionRecordPauseResumeButton.setText("Pause");
 				iconSelectionStopRecordingButton.setEnabled(true);
@@ -1368,6 +1497,10 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 				break;
 			// In stopped mode, show the record button and disable the stop button
 			case Stop:
+				iconSelectionClickZoneButton.setText("Zone");
+				iconSelectionClickZoneButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/shapesButton.png")));
+				iconSelectionClickZoneButton.setEnabled(true);
+				changeClickZoneTransparency(false, true);
 				iconSelectionRecordPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/recordButton.png")));
 				iconSelectionRecordPauseResumeButton.setText("Record");
 				iconSelectionStopRecordingButton.setEnabled(false);
@@ -1426,6 +1559,29 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		}
 	}
 	
+	private void playTempRecording()
+	{
+		// TODO: FINISH THIS.
+		try
+		{
+	        ArrayList<String> clickZoneData = getExportableClickZoneList();
+	        ArrayList<String> inputActionData = new ArrayList<>(recordedActions);
+	        
+	        LinkedList<AbstractInputAction> convertedInputActionsData = (LinkedList<AbstractInputAction>) ActionDataHandlerUtils.convertToActionData(new LinkedList<>(inputActionData));
+	        ArrayList<ClickZoneDetails> convertedClickZoneDetails = ActionDataHandlerUtils.convertToClickZoneDetailsData(clickZoneData);
+	        
+	        PlaybackEngine player = new PlaybackEngine();
+	        
+	        player.loadNewRecording(convertedInputActionsData, convertedClickZoneDetails);
+	        player.playRecording(true, 2, false);
+	        //player.playRecording(true, 5, TimeQuantifier.Seconds, false);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	private void setPlaybackState(PlaybackStates playbackState)
 	{
 		switch (playbackState)
@@ -1450,6 +1606,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 				iconSelectionPlayPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/pauseButton.png")));
 				iconSelectionPlayPauseResumeButton.setText("Pause");
 				iconSelectionStopPlayButton.setEnabled(true);
+				playTempRecording();
 				this.currentPlaybackState = PlaybackStates.Play;
 				break;
 			case Pause:
