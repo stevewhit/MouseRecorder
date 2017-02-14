@@ -2,6 +2,7 @@ package com.github.stevewhit.mouserecorder.playback;
 
 import java.awt.AWTException;
 import java.awt.Robot;
+import java.io.IOException;
 import java.rmi.AccessException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.Queue;
 import java.util.zip.DataFormatException;
 import javax.activation.UnsupportedDataTypeException;
 import javax.activity.InvalidActivityException;
+import com.github.stevewhit.mouserecorder.datahandling.ActionDataHandlerUtils;
 import com.github.stevewhit.mouserecorder.monitor.PixelColor;
 import com.github.stevewhit.mouserecorder.monitor.ScreenUtils;
 import com.github.stevewhit.mouserecorder.ui.ClickZoneDetails;
@@ -60,6 +62,38 @@ public class PlaybackEngine
 	 * Default constructor.
 	 */
 	public PlaybackEngine(){}
+	
+	/**
+	 * Loads a recording from a file location and serializes and stores the user input actions with wait statements between each action.
+	 * @param filePath The file path location of the recording file.
+	 * @param useClickZones Enable or disable the use of click zone windows.
+	 * @throws AccessException Throws if there is an issue loading the recording properly.
+	 */
+	public void loadNewRecording(String filePath, boolean useClickZones) throws AccessException
+	{
+		if (filePath == null)
+		{
+			throw new IllegalArgumentException("Cannot load recording from a null filepath.");
+		}
+		
+		try
+		{
+			if (useClickZones)
+			{
+				// Load recording and click zones.
+				loadNewRecording(new LinkedList<>(ActionDataHandlerUtils.importActionDataFromFile(filePath)), ActionDataHandlerUtils.importClickZoneDataFromFile(filePath));
+			}
+			else
+			{
+				// Load recording only.
+				loadNewRecording(new LinkedList<>(ActionDataHandlerUtils.importActionDataFromFile(filePath)));
+			}
+		}
+		catch(IllegalArgumentException | IOException | DataFormatException ex)
+		{
+			throw new AccessException("Could not properly load the recording file because ==> " + ex.getMessage());
+		}
+	}
 	
 	/**
 	 * Serializes and stores the user input actions with wait statements between each action. Click zones are not used.
