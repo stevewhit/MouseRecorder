@@ -81,9 +81,9 @@ public class PixelColor
 	public boolean isSimilarColor(PixelColor colorToCompare)
 	{
 		// If the values are relatively similar, return true.
-		if (Math.abs(colorToCompare.getRedValue() - this.getRedValue()) < 50 &&
-			Math.abs(colorToCompare.getGreenValue() - this.getGreenValue()) < 50 &&
-			Math.abs(colorToCompare.getBlueValue() - this.getBlueValue()) < 50)
+		if (Math.abs(colorToCompare.getRedValue() - this.getRedValue()) < 25 &&
+			Math.abs(colorToCompare.getGreenValue() - this.getGreenValue()) < 25 &&
+			Math.abs(colorToCompare.getBlueValue() - this.getBlueValue()) < 25)
 		{
 			return true;
 		}
