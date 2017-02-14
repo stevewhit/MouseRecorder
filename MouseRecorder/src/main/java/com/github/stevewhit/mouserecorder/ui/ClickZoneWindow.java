@@ -47,6 +47,18 @@ public class ClickZoneWindow extends JFrame
 	 * at the given window location.
 	 * @param showTransparentMode Indicates if the window should be fully transparent or semi-transparent.
 	 * @param lockPlacementAndSize Indicates if the window will allow the user to resize and move the window.
+	 * @param windowDetails Contains the location and dimensions of this window.
+	 */
+	public ClickZoneWindow(boolean showTransparentMode, boolean lockPlacementAndSize, ClickZoneDetails windowDetails)
+	{
+		this(showTransparentMode, lockPlacementAndSize, windowDetails.getWindowLocation(), windowDetails.getWindowDimensions());
+	}
+	
+	/**
+	 * A constructor that creates a click-zone window with the option to choose a transparent background or a semi-transparent red background
+	 * at the given window location.
+	 * @param showTransparentMode Indicates if the window should be fully transparent or semi-transparent.
+	 * @param lockPlacementAndSize Indicates if the window will allow the user to resize and move the window.
 	 * @param windowLocation The location of the top left corner of the window.
 	 * @param windowDimensions The preferred size of the click zone frame.
 	 */
