@@ -1,6 +1,8 @@
 package com.github.stevewhit.mouserecorder.playback;
 
 import java.awt.AWTException;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Robot;
 import java.io.IOException;
 import java.rmi.AccessException;
@@ -11,8 +13,11 @@ import java.util.Queue;
 import java.util.zip.DataFormatException;
 import javax.activation.UnsupportedDataTypeException;
 import javax.activity.InvalidActivityException;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import com.github.stevewhit.mouserecorder.datahandling.ActionDataHandlerUtils;
 import com.github.stevewhit.mouserecorder.monitor.PixelColor;
+import com.github.stevewhit.mouserecorder.monitor.PixelCoordinate2D;
 import com.github.stevewhit.mouserecorder.monitor.ScreenUtils;
 import com.github.stevewhit.mouserecorder.ui.ClickZoneDetails;
 import com.github.stevewhit.mouserecorder.ui.ClickZoneWindow;
@@ -289,8 +294,9 @@ public class PlaybackEngine
 		else if (action instanceof MouseButtonPress)
 		{
 			MouseButtonPress castMBP = ((MouseButtonPress)action);
-			
-			if (!checkPixelColorBeforeClick)
+		
+			// Check if the mousepress occurs within one of the given geometries.			
+			if (!checkPixelColorBeforeClick || !pointIsInsideLoadedClickZones(castMBP.getLocation()))
 			{
 				robot.mousePress(castMBP.getMouseButton().getButtonNum());
 				pressedColorToCheckReleasedFor = null;
@@ -376,6 +382,37 @@ public class PlaybackEngine
 	}
 	
 	/**
+	 * Checks to see if a given point falls inside atleast one of the click zone windows.
+	 * @param locationToCheck The coordinate point location that is tested.
+	 * @return Returns true if the point location falls inside atleast one of the click zone windows; otherwise false.
+	 */
+	private boolean pointIsInsideLoadedClickZones(PixelCoordinate2D locationToCheck)
+	{
+		if (loadedRecordingClickZones == null || loadedRecordingClickZones.isEmpty())
+		{
+			return false;
+		}
+		else
+		{
+			// Check each click zone window to see if the point lies within atleast one of them.
+			for(ClickZoneDetails loadedZoneDetail : loadedRecordingClickZones)
+			{
+				final Rectangle clickZoneRect = new Rectangle();
+				clickZoneRect.setLocation(loadedZoneDetail.getWindowLocation());
+				clickZoneRect.setSize(loadedZoneDetail.getWindowDimensions());
+				
+				// If the point location falls inside the click zone rectangle, return true.
+				if (clickZoneRect.contains(new Point(locationToCheck.getX(), locationToCheck.getY())))
+				{
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Opens and shows the click zone windows that were loaded with the recording.
 	 */
 	private void showLoadedClickZoneWindows()
@@ -391,8 +428,21 @@ public class PlaybackEngine
 			// Foreach of the loaded window details, create a new window for it.
 			for (final ClickZoneDetails windowDetails : loadedRecordingClickZones)
 			{
-				// Create click zone window with the same location and size but with updated transparency.
-				visibleClickZoneWindows.add(new ClickZoneWindow(true, true, windowDetails));
+				try
+				{
+					// Set the look and feel so the border is invisible
+		        	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		        	
+		        	// Create click zone window with the same location and size but with updated transparency.
+					visibleClickZoneWindows.add(new ClickZoneWindow(true, true, windowDetails));
+					
+					// Reset the look and feel to the original value.
+					UIManager.setLookAndFeel("com.jtattoo.plaf.acryl.AcrylLookAndFeel");
+				}
+				catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException | ClassCastException ex)
+				{
+					ex.printStackTrace();
+				}
 			}
 		}
 	}
