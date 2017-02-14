@@ -72,6 +72,24 @@ public class PixelColor
 	{
 		return this.rgbValue & 0xFF;
 	}
+	
+	/**
+	 * Checks for equality of two pixel colors with an allowed error. 
+	 * @param colorToCompare The color that is being compared to this.
+	 * @return Returns true if the compared color falls within the allowed range to be considered similar. otherwise false.
+	 */
+	public boolean isSimilarColor(PixelColor colorToCompare)
+	{
+		// If the values are relatively similar, return true.
+		if (Math.abs(colorToCompare.getRedValue() - this.getRedValue()) < 50 &&
+			Math.abs(colorToCompare.getGreenValue() - this.getGreenValue()) < 50 &&
+			Math.abs(colorToCompare.getBlueValue() - this.getBlueValue()) < 50)
+		{
+			return true;
+		}
+		
+		return false;
+	}
 
 	/**
 	 * Updates the RGB Value for this color. 
