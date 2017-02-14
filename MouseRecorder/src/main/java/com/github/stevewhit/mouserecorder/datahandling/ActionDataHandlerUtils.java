@@ -12,11 +12,11 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.zip.DataFormatException;
 import javax.activation.UnsupportedDataTypeException;
-
 import com.github.stevewhit.mouserecorder.monitor.Pixel;
 import com.github.stevewhit.mouserecorder.monitor.PixelColor;
 import com.github.stevewhit.mouserecorder.monitor.PixelCoordinate2D;
 import com.github.stevewhit.mouserecorder.monitor.ScreenUtils;
+import com.github.stevewhit.mouserecorder.ui.ClickZoneDetails;
 import com.github.stevewhit.mouserecorder.userinputs.AbstractInputAction;
 import com.github.stevewhit.mouserecorder.userinputs.keyboard.AbstractKeyboardInputAction;
 import com.github.stevewhit.mouserecorder.userinputs.keyboard.KeyboardKeyPress;
@@ -255,6 +255,53 @@ public class ActionDataHandlerUtils
 	}
 	
 	/**
+	 * Converts a list of string data (detailing a click zone) into a list of clickzonedetails.
+	 * @param stringDetailsData A list of click zone details data with string representations.
+	 * @return Returns the same list but represented as click zone details objects.
+	 * @throws IllegalArgumentException Throws if the string action data is null or empty.
+	 * @throws DataFormatException Throws if the data in the string action data doesn't conform to the pre-existing ClickZoneDetails structure.
+	 */
+	public static ArrayList<ClickZoneDetails> convertToClickZoneDetailsData(ArrayList<String> stringDetailsData) throws IllegalArgumentException, DataFormatException
+	{
+		if (stringDetailsData == null)
+			throw new IllegalArgumentException("String details data cannot be null or empty.");
+		
+		// A list of processed click zone details based on the file data that was read in.
+		ArrayList<ClickZoneDetails> processedDetailsData = new ArrayList<>();
+		
+		// Iterate the file data and convert each line into appropriate clickzonedetails
+		for (Iterator<String> fileDataIterator = stringDetailsData.listIterator(); fileDataIterator.hasNext(); )
+		{
+			String line = fileDataIterator.next();
+			
+			try
+			{
+				String[] splitLine = line.split(":");
+				
+				if (splitLine != null && splitLine[0] != null && splitLine[0].equals("CZONEE"))
+				{
+					int xLoc = Integer.valueOf(splitLine[1]);
+					int yLoc = Integer.valueOf(splitLine[2]);
+					int width = Integer.valueOf(splitLine[3]);
+					int height = Integer.valueOf(splitLine[4]);
+					
+					processedDetailsData.add(new ClickZoneDetails(xLoc, yLoc, width, height));
+				}
+				else
+				{
+					throw new UnsupportedDataTypeException("Details data contains unsupported click-zone detail types.");
+				}
+			}
+			catch(UnsupportedDataTypeException | IndexOutOfBoundsException ex)
+			{
+				throw new DataFormatException("Cancelled conversion of click zone details data because ==> " + ex.getMessage());
+			}
+		}
+		
+		return processedDetailsData;
+	}
+	
+	/**
 	 * Imports all input action data from a file into an arraylist of input actions.
 	 * @param fileLocation The system path where the file is stored.
 	 * @return Returns the input action data from a file represented as a list of input actions. Each entry in the list is a line in the file.
@@ -272,17 +319,17 @@ public class ActionDataHandlerUtils
 	}
 	
 	/**
-	 * Imports only click zone data and returns it as a list of strings.
+	 * Imports only click zone data and returns it as a list of ClickZoneDetails.
 	 * @param fileLocation The system path where the file is stored.
-	 * @return Returns the click zone data from a file represented as a list of Strings. Each entry in the list is a line in the file.
+	 * @return Returns the click zone data from a file represented as a list of ClickZoneDetails. Each entry in the list is a line in the file.
 	 * @throws IllegalArgumentException Throws if the file location is null or empty.
 	 * @throws IOException Throws if the file doesn't exist or if there's an issue reading information from the file.
 	 * @throws DataFormatException Throws if the data in the file doesn't conform to the pre-existing data structures.
 	 */
-	public static ArrayList<String> importClickZoneDataFromFile(String fileLocation) throws IllegalArgumentException, IOException, DataFormatException
+	public static ArrayList<ClickZoneDetails> importClickZoneDataFromFile(String fileLocation) throws IllegalArgumentException, IOException, DataFormatException
 	{
 		// Import data from the file and extract only the click zone window information.
-		return extractClickZoneStringData(importStringDataFromFile(fileLocation));
+		return convertToClickZoneDetailsData(extractClickZoneStringData(importStringDataFromFile(fileLocation)));
 	}
 	
 	/**

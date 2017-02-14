@@ -1,6 +1,9 @@
 package com.github.stevewhit.mouserecorder.datahandling;
 
 import static org.junit.Assert.*;
+
+import java.awt.Dimension;
+import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import com.github.stevewhit.mouserecorder.datahandling.ActionDataHandlerUtils;
+import com.github.stevewhit.mouserecorder.ui.ClickZoneDetails;
 import com.github.stevewhit.mouserecorder.userinputs.AbstractInputAction;
 import com.github.stevewhit.mouserecorder.userinputs.keyboard.KeyboardKeyPress;
 import com.github.stevewhit.mouserecorder.userinputs.keyboard.KeyboardKeyRelease;
@@ -260,6 +264,50 @@ public class ActionDataHandlerUtilsTest
 	
 	//=======================================================
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testConvertToClickZoneDetailsData_nullList() throws IllegalArgumentException, DataFormatException
+	{
+		ActionDataHandlerUtils.convertToClickZoneDetailsData(null);
+	}
+	
+	@Test
+	public void testConvertToClickZoneDetailsData_emptyList() throws IllegalArgumentException, DataFormatException
+	{
+		ActionDataHandlerUtils.convertToClickZoneDetailsData(new ArrayList<String>());
+	}
+	
+	@Test(expected=DataFormatException.class)
+	public void testConvertToClickZoneDetailsData_NotSupportedID() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		exportedItems.add("NOTSUPPORTEDID");
+		ActionDataHandlerUtils.convertToClickZoneDetailsData(new ArrayList<>(exportedItems));
+	}
+
+	@Test(expected=DataFormatException.class)
+	public void testConvertToClickZoneDetailsData_DoesntHaveRequiredFields() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		exportedItems.add("CZONEE:234:23:33");
+		ActionDataHandlerUtils.convertToClickZoneDetailsData(new ArrayList<>(exportedItems));
+	}
+	
+	@Test(expected=DataFormatException.class)
+	public void testConvertToClickZoneDetailsData_FieldsArentOfExpectedType() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		exportedItems.add("CZONEE:234:23:33:NotInteger");
+		ActionDataHandlerUtils.convertToClickZoneDetailsData(new ArrayList<>(exportedItems));
+	}
+	
+	@Test
+	public void testConvertToClickZoneDetailsData_Valid() throws IllegalArgumentException, IOException, DataFormatException
+	{
+		ArrayList<ClickZoneDetails> convertedActions = ActionDataHandlerUtils.convertToClickZoneDetailsData(ActionDataHandlerUtils.extractClickZoneStringData(new ArrayList<>(exportedItems)));
+		
+		assertTrue(convertedActions.size() == 5);
+		assertTrue(convertedActions.toArray()[4] instanceof ClickZoneDetails);
+	}
+	
+	//=======================================================
+	
 	@Test(expected=DataFormatException.class)
 	public void testImportActionDataFromFile_NotSupportedID() throws IllegalArgumentException, IOException, DataFormatException
 	{
@@ -302,11 +350,14 @@ public class ActionDataHandlerUtilsTest
 	@Test
 	public void testImportClickZoneDataFromFile_Valid() throws IllegalArgumentException, IOException, DataFormatException
 	{
-		ArrayList<String> importedActions = ActionDataHandlerUtils.importClickZoneDataFromFile(saveLocation);
+		ArrayList<ClickZoneDetails> importedActions = ActionDataHandlerUtils.importClickZoneDataFromFile(saveLocation);
 		
 		assertTrue(importedActions.size() == 5);
-		assertTrue(importedActions.get(0).equals("CZONEE:698:413:50:50"));
-		assertTrue(importedActions.get(4).equals("CZONEE:1222:417:250:250"));
+		assertTrue(importedActions.get(0).getWindowDimensions().equals(new Dimension(50, 50)));
+		assertTrue(importedActions.get(0).getWindowLocation().equals(new Point(698, 413)));
+		
+		assertTrue(importedActions.get(4).getWindowDimensions().equals(new Dimension(250, 250)));
+		assertTrue(importedActions.get(4).getWindowLocation().equals(new Point(1222, 417)));
 	}
 
 	//=======================================================
