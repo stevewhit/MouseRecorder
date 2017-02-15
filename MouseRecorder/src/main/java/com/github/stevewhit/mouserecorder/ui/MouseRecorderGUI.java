@@ -5,25 +5,37 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyEventPostProcessor;
+import java.awt.KeyboardFocusManager;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.function.IntPredicate;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -54,11 +66,12 @@ import org.jnativehook.NativeHookException;
 import org.jnativehook.SwingDispatchService;
 import com.github.stevewhit.mouserecorder.datahandling.ActionDataHandlerUtils;
 import com.github.stevewhit.mouserecorder.inputtracking.GlobalInputRecorder;
+import com.github.stevewhit.mouserecorder.inputtracking.GlobalUserShortcutListener;
 import com.github.stevewhit.mouserecorder.playback.PlaybackEngine;
 import com.github.stevewhit.mouserecorder.ui.PlaybackOptions.TimeQuantifier;
 import com.github.stevewhit.mouserecorder.userinputs.AbstractInputAction;
 
-public class MouseRecorderGUI extends JFrame implements WindowListener
+public class MouseRecorderGUI extends JFrame implements WindowListener, PropertyChangeListener
 {
 	/**
 	 * The constant serial versionUID
@@ -71,11 +84,23 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 	/** The input recorder that captures mouse and keyboard inputs. **/
 	GlobalInputRecorder inputRecorder = new GlobalInputRecorder();
 	LinkedList<String> recordedActions;
+	
+	/** The listener that fires events if any of the user shortcuts are pressed **/
+	GlobalUserShortcutListener userShortcutListener = new GlobalUserShortcutListener();
+	
+	/** The playback engine that plays recordings after they're loaded **/
+	PlaybackEngine playbackPlayer = new PlaybackEngine();
 
-	/* */
-	int[] recorderStartKeys = new int[]{KeyEvent.VK_CONTROL, KeyEvent.VK_R};
-	int[] recorderStopKeys = new int[]{KeyEvent.VK_CONTROL, KeyEvent.VK_R};
-	int[] recorderPauseKeys = new int[]{KeyEvent.VK_CONTROL, KeyEvent.VK_P};
+	/* Shortcut key combinations */
+	Integer[] recorderStartShortcutKeys = new Integer[]{KeyEvent.VK_ALT, KeyEvent.VK_R};
+	Integer[] recorderStopShortcutKeys = new Integer[]{KeyEvent.VK_ALT, KeyEvent.VK_R};
+	Integer[] recorderPauseShortcutKeys = new Integer[]{KeyEvent.VK_ALT, KeyEvent.VK_P};
+	
+	Integer[] playbackStartShortcutKeys = new Integer[]{KeyEvent.VK_ALT, KeyEvent.VK_S};
+	Integer[] playbackPauseShortcutKeys = new Integer[]{KeyEvent.VK_ALT, KeyEvent.VK_P};
+	Integer[] playbackStopShortcutKeys = new Integer[]{KeyEvent.VK_ALT, KeyEvent.VK_S};
+	
+	private final static Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS = new Integer[]{KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_SHIFT};
 	
 	/** Panels used */
 	private JPanel displayPanel;
@@ -170,7 +195,6 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		iconSelectionPanel = new JPanel(new GridLayout(1, 1));
 		iconSelectionPanel.setPreferredSize(new Dimension(1, 80));
 		iconSelectionPanel.setMinimumSize(new Dimension(10, 80));
-		//iconSelectionPanel.setBorder(new TitledBorder("IconSelectionPanel"));
 		addIconsToIconsPanel(iconSelectionPanel);
 		
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -230,6 +254,11 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		// Adds support for window actions such as: open, close, minimize, maximize.. etc.
 		addWindowListener(this);
 
+		// Add a keyboard event listener for the entire frame and all its components
+		// To listen for shortcut combinations.
+		//KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(this);
+		startUserShortcutListener();
+		
 		// Disable parent logger and set the desired level.
 		logger.setUseParentHandlers(false);
 		logger.setLevel(Level.ALL);
@@ -251,6 +280,167 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		setVisible(true);
 		
 	}
+	
+	private void startUserShortcutListener()
+	{
+		final PropertyChangeListener frameListener = this;
+
+		// Start the user shortcut listener.
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				userShortcutListener.StartListening(frameListener, getAllShortcutSequences());
+			}
+		});
+	}
+	
+	private void stopUserShortcutListener()
+	{
+		// Stop the user shortcut listener.
+		userShortcutListener.StopListening();
+	}
+	
+	public int[] toPrimitive(Integer[] integerArray)
+	{
+		int[] intArray = new int[integerArray.length];
+		
+		for (int i = 0; i < integerArray.length; i++)
+		{
+			intArray[i] = integerArray[i].intValue();
+		}
+		
+		return intArray;
+	}
+	
+	@Override
+	public void propertyChange(PropertyChangeEvent evt)
+	{
+		// get the index of the shortcut that was pressed.
+		int shortcutIndex = (int) evt.getNewValue();
+
+		Integer[] shortCutPressed = getAllShortcutSequences().get(shortcutIndex);
+		
+		// Based on which recording/playback state we're in, see if that shortcut is anything we should be worried about.
+		if(currentRecordingState != RecordingStates.Disable && currentPlaybackState == PlaybackStates.Disable)
+		{
+			// If the record shortcut keys are pressed
+			// and we're not recording (so either paused or stopped). RECORD
+			if (arraysEqual(shortCutPressed, recorderStartShortcutKeys) && currentRecordingState != RecordingStates.Record)
+			{
+				if (currentRecordingState == RecordingStates.Pause)
+					setRecordingState(RecordingStates.Resume);
+				else
+					setRecordingState(RecordingStates.Record);
+			}
+			// If the stop shortcut keys are pressed 
+			// and we're either recording or paused.. STOP
+			else if (arraysEqual(shortCutPressed, recorderStopShortcutKeys) && currentRecordingState != RecordingStates.Stop)
+			{
+				// Stop recording
+				setRecordingState(RecordingStates.Stop);
+			}
+			// If the pause shortcut keys are pressed
+			// and we're recording.. PAUSE
+			else if (arraysEqual(shortCutPressed, recorderPauseShortcutKeys) && currentRecordingState == RecordingStates.Record)
+			{
+				// Pause recording
+				setRecordingState(RecordingStates.Pause);
+			}
+		}
+		else if (currentRecordingState == RecordingStates.Disable && currentPlaybackState != PlaybackStates.Disable)
+		{
+			// If the play shortcut keys are pressed
+			// and we're not already playing (So either paused or stopped). PLAY
+			if (arraysEqual(shortCutPressed, playbackStartShortcutKeys) && currentPlaybackState != PlaybackStates.Play)
+			{
+				if (currentPlaybackState == PlaybackStates.Pause)
+					setPlaybackState(PlaybackStates.Resume);
+				else
+					setPlaybackState(PlaybackStates.Play);
+			}
+			//If the stop shortcut keys are pressed
+			// and we're either playing or paused.. STOP
+			else if (arraysEqual(shortCutPressed, playbackStopShortcutKeys) && currentPlaybackState != PlaybackStates.Stop)
+			{
+				// Stop playing
+				setPlaybackState(PlaybackStates.Stop);			
+			}
+			// If the pause shortcut keys are pressed
+			// and we're playing.. PAUSE
+			else if (arraysEqual(shortCutPressed, playbackPauseShortcutKeys) && currentPlaybackState == PlaybackStates.Play)
+			{
+				// Pause playing
+				setPlaybackState(PlaybackStates.Pause);
+			}
+			else if (arraysEqual(shortCutPressed, ERROR_DURING_PLAYBACK_SHORTCUT_KEYS) && currentPlaybackState == PlaybackStates.Play)
+			{
+				// TODO: THIS..
+				System.out.println("ERROR OCCURED DURING PLAYBACKKKK!");
+				throw new IllegalStateException("Error occurred during playback! haven't implemented this yet in the shortcut listener.");
+			}
+		}
+	}
+	
+	private boolean arraysEqual(Integer[] firstArray, Integer[] secondArray)
+	{
+		if (firstArray == null && secondArray != null)
+			return false;
+		
+		if (secondArray == null && firstArray != null)
+			return false;
+		
+		if (firstArray.length != secondArray.length)
+			return false;
+		
+		for (int i = 0; i < firstArray.length; i++)
+		{
+			if (firstArray[i].intValue() != secondArray[i].intValue())
+				return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Goes through each of the shortcuts and adds only unique key combinations.
+	 * @return
+	 */
+	private ArrayList<Integer[]> getAllShortcutSequences()
+	{
+		final ArrayList<Integer[]> shortcuts = new ArrayList<>();
+		
+		shortcuts.add(recorderStartShortcutKeys);
+		shortcuts.add(recorderStopShortcutKeys);
+		shortcuts.add(recorderPauseShortcutKeys);
+
+		shortcuts.add(playbackStartShortcutKeys);
+		shortcuts.add(playbackStopShortcutKeys);
+		shortcuts.add(playbackPauseShortcutKeys);
+		
+		shortcuts.add(ERROR_DURING_PLAYBACK_SHORTCUT_KEYS);
+		
+		return shortcuts;
+	}
+	
+	/*
+	@Override
+	public boolean postProcessKeyEvent(KeyEvent event)
+	{
+		tempListenerNeedsToChange.changeSomething();
+		if (event.getID() == KeyEvent.KEY_PRESSED)
+		{
+			System.out.println("Key: " + event.getKeyText(event.getKeyCode()) + " was pressed.");
+		}
+		else if (event.getID() == KeyEvent.KEY_RELEASED)
+		{
+			System.out.println("Key: " + event.getKeyText(event.getKeyCode()) + " was released.");
+		}
+		
+		return rootPaneCheckingEnabled;
+	}
+	*/
 	
 	private void playbackQueueAddButtonPressed()
 	{
@@ -1354,37 +1544,23 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 	
 	private void startInputRecorder()
 	{
+		// Minimize window.
+		this.setState(JFrame.ICONIFIED);
+		
 		// Start the input recorder.
 		SwingUtilities.invokeLater(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-		        inputRecorder.Record(recordingPanelRecordedActionsTextArea, new int[]{KeyEvent.VK_CONTROL, KeyEvent.VK_R});
+		        inputRecorder.Record(recordingPanelRecordedActionsTextArea, toPrimitive(recorderStopShortcutKeys));
 			}
 		});
 	}
 	
 	private void stopInputRecorder()
 	{
-		try
-		{
-			Robot robot = new Robot();
-			
-			for (int stopKey : recorderStopKeys)
-			{
-				robot.keyPress(stopKey);
-			}
-			
-			for (int stopKey : recorderStopKeys)
-			{
-				robot.keyRelease(stopKey);
-			}
-		}
-		catch (AWTException e)
-		{
-			e.printStackTrace();
-		}
+		inputRecorder.StopRecording();
 	}
 	
 	private void resumeRecordingActions()
@@ -1431,6 +1607,9 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 			
 			// Save the recorded actions so far.
 			saveRecordedActions();
+			
+			// Bring window to the front.
+			this.setState(JFrame.NORMAL);
 		}
 	}
 	
@@ -1561,7 +1740,9 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 	
 	private void playTempRecording()
 	{
-		// TODO: FINISH THIS.
+		//TODO: THIS..
+		
+		System.out.println("Running recording");
 		try
 		{
 	        ArrayList<String> clickZoneData = getExportableClickZoneList();
@@ -1570,10 +1751,9 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 	        LinkedList<AbstractInputAction> convertedInputActionsData = (LinkedList<AbstractInputAction>) ActionDataHandlerUtils.convertToActionData(new LinkedList<>(inputActionData));
 	        ArrayList<ClickZoneDetails> convertedClickZoneDetails = ActionDataHandlerUtils.convertToClickZoneDetailsData(clickZoneData);
 	        
-	        PlaybackEngine player = new PlaybackEngine();
-	        
-	        player.loadNewRecording(convertedInputActionsData, convertedClickZoneDetails);
-	        player.playRecording(true, 2, false);
+	        playbackPlayer.loadNewRecording(convertedInputActionsData, convertedClickZoneDetails);
+	        //playbackPlayer.playLoadedRecording(true, 2, playbackStopShortcutKeys, ERROR_DURING_PLAYBACK_SHORTCUT_KEYS);
+	        playbackPlayer.playLoadedRecording(true, 20, TimeQuantifier.Seconds, playbackStopShortcutKeys, ERROR_DURING_PLAYBACK_SHORTCUT_KEYS);
 	        //player.playRecording(true, 5, TimeQuantifier.Seconds, false);
 		}
 		catch(Exception e)
@@ -1606,22 +1786,36 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 				iconSelectionPlayPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/pauseButton.png")));
 				iconSelectionPlayPauseResumeButton.setText("Pause");
 				iconSelectionStopPlayButton.setEnabled(true);
+				iconSelectionChangeViewButton.setEnabled(false);
+				iconSelectionNewButton.setEnabled(false);
+				
 				playTempRecording();
+				
 				this.currentPlaybackState = PlaybackStates.Play;
 				break;
 			case Pause:
+				playbackPlayer.pausePlayback();
+				
 				iconSelectionPlayPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/playButton.png")));
 				iconSelectionPlayPauseResumeButton.setText("Resume");
 				iconSelectionStopPlayButton.setEnabled(true);
 				this.currentPlaybackState = PlaybackStates.Pause;
 				break;
 			case Stop:
+				
+				playbackPlayer.stopPlaybackAndUnload();
+
 				iconSelectionPlayPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/playButton.png")));
 				iconSelectionPlayPauseResumeButton.setText("Play All");
 				iconSelectionStopPlayButton.setEnabled(false);
+				iconSelectionChangeViewButton.setEnabled(true);
+				iconSelectionNewButton.setEnabled(true);
 				this.currentPlaybackState = PlaybackStates.Stop;
 				break;
 			case Resume:
+				
+				playbackPlayer.resumePlayback();
+				
 				iconSelectionPlayPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/pauseButton.png")));
 				iconSelectionPlayPauseResumeButton.setText("Pause");
 				iconSelectionStopPlayButton.setEnabled(true);
@@ -1700,4 +1894,5 @@ public class MouseRecorderGUI extends JFrame implements WindowListener
 		System.runFinalization();
 		System.exit(0);
 	}
+
 }
