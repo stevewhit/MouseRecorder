@@ -118,7 +118,7 @@ public class GlobalInputRecorder
 		GlobalScreen.addNativeMouseMotionListener(globalMouseTracker);
 		
 		// Create and add the key trackers.
-		globalKeyTracker = new GlobalKeyTracker(recordedActionsQueue, optionalOutputTextArea, cancellationKeys);
+		globalKeyTracker = new GlobalKeyTracker(this, recordedActionsQueue, optionalOutputTextArea, cancellationKeys);
 		GlobalScreen.addNativeKeyListener(globalKeyTracker);
 		
 		/* Note: JNativeHook does *NOT* operate on the event dispatching thread.
@@ -132,5 +132,16 @@ public class GlobalInputRecorder
 		this.lastRecordingValues = recordedActionsQueue;
 		
 		return recordedActionsQueue;
+	}
+	
+	/**
+	 * Stops the input recorder from recording any more actions.
+	 */
+	public void StopRecording()
+	{
+		// Remove previous listeners so we don't have multiple recorders
+		GlobalScreen.removeNativeMouseListener(globalMouseTracker);
+		GlobalScreen.removeNativeMouseMotionListener(globalMouseTracker);
+		GlobalScreen.removeNativeKeyListener(globalKeyTracker);
 	}
 }

@@ -48,15 +48,20 @@ public class GlobalKeyTracker implements NativeKeyListener
 	private JTextArea optionalOutputTextArea;
 	
 	/**
+	 * The recorder that owns this key tracker.
+	 */
+	private GlobalInputRecorder parentRecorder;
+	
+	/**
 	 * Constructor that accepts a reference to the actions queue that the generated mouse clicks are added to and an array of cancellation keys. 
 	 * The default cancellation keys are set to ALT+R
 	 * @param actionsQueueRef The queue of actions that clicks are added to.
 	 * @param cancellationKeys An array of integer values which represent KeyEvent integers, used to cancel the recorder.
 	 * @throws IllegalArgumentException Throws if the queue is null.
 	 */
-	protected GlobalKeyTracker(Queue<String> actionsQueue, int[] cancellationKeys) throws IllegalArgumentException
+	protected GlobalKeyTracker(GlobalInputRecorder parentRecorder, Queue<String> actionsQueue, int[] cancellationKeys) throws IllegalArgumentException
 	{
-		this(actionsQueue, null, cancellationKeys);
+		this(parentRecorder, actionsQueue, null, cancellationKeys);
 	}
 	
 	/**
@@ -67,8 +72,20 @@ public class GlobalKeyTracker implements NativeKeyListener
 	 * @param cancellationKeys An array of integer values which represent KeyEvent integers, used to cancel the recorder.
 	 * @throws IllegalArgumentException Throws if the queue is null.
 	 */
-	protected GlobalKeyTracker(Queue<String> actionsQueue, JTextArea optionalOutputTextArea, int[] cancellationKeys) throws IllegalArgumentException
+	protected GlobalKeyTracker(GlobalInputRecorder parentRecorder, Queue<String> actionsQueue, JTextArea optionalOutputTextArea, int[] cancellationKeys) throws IllegalArgumentException
 	{
+		if (parentRecorder == null)
+		{
+			throw new IllegalArgumentException("Parent recorder cannot be null.");
+		}
+		
+		if (actionsQueue == null)
+		{
+			parentRecorder.StopRecording();
+			throw new IllegalArgumentException("Actions queue cannot be null.");
+		}
+		
+		/*
 		if (actionsQueue == null)
 		{
 			try
@@ -83,7 +100,8 @@ public class GlobalKeyTracker implements NativeKeyListener
 			
 			throw new IllegalArgumentException("Actions queue cannot be null.");
 		}
-		
+		*/
+		this.parentRecorder = parentRecorder;
 		this.actionsQueue = actionsQueue;
 		this.optionalOutputTextArea = optionalOutputTextArea;
 		
@@ -118,6 +136,7 @@ public class GlobalKeyTracker implements NativeKeyListener
 			// Check for the required cancellation sequence
 			if (areCancellationKeysPressed())
 			{
+				/*
 				try
 				{
 					GlobalScreen.unregisterNativeHook();
@@ -127,7 +146,8 @@ public class GlobalKeyTracker implements NativeKeyListener
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
+				*/
+				parentRecorder.StopRecording();
 				return;
 			}
 		}
