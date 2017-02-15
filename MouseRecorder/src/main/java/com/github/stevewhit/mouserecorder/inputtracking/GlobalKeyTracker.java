@@ -81,22 +81,6 @@ public class GlobalKeyTracker implements NativeKeyListener
 			throw new IllegalArgumentException("Actions queue cannot be null.");
 		}
 		
-		/*
-		if (actionsQueue == null)
-		{
-			try
-			{
-				GlobalScreen.unregisterNativeHook();
-			}
-			catch (NativeHookException e1)
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-			throw new IllegalArgumentException("Actions queue cannot be null.");
-		}
-		*/
 		this.parentRecorder = parentRecorder;
 		this.actionsQueue = actionsQueue;
 		this.optionalOutputTextArea = optionalOutputTextArea;
@@ -132,17 +116,6 @@ public class GlobalKeyTracker implements NativeKeyListener
 			// Check for the required cancellation sequence
 			if (areCancellationKeysPressed())
 			{
-				/*
-				try
-				{
-					GlobalScreen.unregisterNativeHook();
-				}
-				catch (NativeHookException e1)
-				{
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				*/
 				parentRecorder.StopRecording();
 				return;
 			}
