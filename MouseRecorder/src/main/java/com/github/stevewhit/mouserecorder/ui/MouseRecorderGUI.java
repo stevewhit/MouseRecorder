@@ -19,11 +19,15 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.DataFormatException;
+
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -137,7 +141,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 	
 	/** A list of items in the queue **/
 	private final static String CURRENT_RECORDING_NAME = "Current Recording";
-	private ArrayList<PlaybackOptions> playbackOptionsList = new ArrayList<PlaybackOptions>();
+	private Map<PlaybackOptions, LoadedRecording> loadedPlaybackMap = new HashMap<PlaybackOptions, LoadedRecording>();
 	private PlaybackOptions currentPlaybackOptions;
 
 	/** Click Zones that were added to the recording **/
@@ -412,45 +416,51 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		return shortcuts;
 	}
 	
-	/*
-	@Override
-	public boolean postProcessKeyEvent(KeyEvent event)
-	{
-		tempListenerNeedsToChange.changeSomething();
-		if (event.getID() == KeyEvent.KEY_PRESSED)
-		{
-			System.out.println("Key: " + event.getKeyText(event.getKeyCode()) + " was pressed.");
-		}
-		else if (event.getID() == KeyEvent.KEY_RELEASED)
-		{
-			System.out.println("Key: " + event.getKeyText(event.getKeyCode()) + " was released.");
-		}
-		
-		return rootPaneCheckingEnabled;
-	}
-	*/
-	
 	private void playbackQueueAddButtonPressed()
 	{
-		/*
-		 * - Prompt for recording file selection
-		 * - Create a default playback options with the desired file location
-		 * - Add the new creation to the playbackQueueList
-		 * - Add the item to the viewer
-		 * - Select the item in the viewer.
-		 */
-		
 		System.out.println("QueueAdd button pressed");
 		
-		// TODO: Prompt for recording file selection.
+		// Initialize the file chooser
+		final JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
 		
-		String tempSelectedFile = "C:\\Users\\Steve\\Desktop\\DefaultAddedItem.txt";
+		// Open dialog and wait for user to save.
+		int returnValue = fileChooser.showOpenDialog(this);
 		
-		// Create default playback options with the file location
-		PlaybackOptions defaultOptions = new PlaybackOptions(tempSelectedFile);
+		// Make sure the user actually saved.
+		if (returnValue == JFileChooser.APPROVE_OPTION)
+		{
+			// Verify the filename ends in .txt, if not, add it for them.
+			String fileOpenLocation = fileChooser.getSelectedFile().getPath();
+		
+			if (!fileOpenLocation.endsWith(".txt"))
+			{
+				JOptionPane.showMessageDialog(this, "This file is not a valid recording text file.");
+				return;
+			}
+			
+			// Create default playback options with the file location
+			PlaybackOptions defaultOptions = new PlaybackOptions(fileOpenLocation);
 
-		// Add the default options to the queue.
-		addPlaybackItemToQueue(defaultOptions);
+			// Add the default options to the queue.
+			try
+			{
+				addPlaybackItemToQueue(defaultOptions);
+			}
+			catch (IllegalArgumentException | IOException e)
+			{
+				JOptionPane.showMessageDialog(this, "There was an error trying to read from the file.");
+				return;
+			}
+			catch(DataFormatException e)
+			{
+				JOptionPane.showMessageDialog(this, "This file contains invalid or unsupported data types.");
+				return;
+			}
+		}
+		// Cancel / X button ==> Don't reset text area.
+		else
+			return;
 	}
 	
 	private void playbackQueueRemoveButtonPressed()
@@ -525,15 +535,15 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			// Remove the item from the viewer queue.
 			playbackQueueRecordsListModel.removeElement(itemID);
 			
-			// Remove the item from the playbackOptionsList
-			for (Iterator<PlaybackOptions> optionsIter = playbackOptionsList.listIterator(); optionsIter.hasNext();)
+			// Remove the item from the playback map.
+			for (Iterator<Map.Entry<PlaybackOptions, LoadedRecording>> mapIter = loadedPlaybackMap.entrySet().iterator(); mapIter.hasNext(); )
 			{
-				PlaybackOptions nextOptionsItem = optionsIter.next();
+				PlaybackOptions nextOptionsItem = mapIter.next().getKey();
 				
 				if (nextOptionsItem.getID() != null && nextOptionsItem.getID().equals(itemID))
 				{
 					// Found a match, remove it.
-					optionsIter.remove();
+					mapIter.remove();
 					break;
 				}
 			}
@@ -558,10 +568,10 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		}
 	}
 	
-	private void addPlaybackItemToQueue(PlaybackOptions playbackOptions)
-	{
+	private void addPlaybackItemToQueue(PlaybackOptions playbackOptions) throws IllegalArgumentException, IOException, DataFormatException
+	{		
 		// Add the item to the playbackQueueList
-		playbackOptionsList.add(playbackOptions);
+		loadedPlaybackMap.put(playbackOptions, new LoadedRecording(playbackOptions.recordingFileLocation));
 		
 		// Add the item to the viewer
 		playbackQueueRecordsListModel.addElement(playbackOptions.getID());
@@ -603,7 +613,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 	private void showPlaybackControls(PlaybackOptions playbackOptions)
 	{	
 		// Re-enable the playback options panel if nothing is in the queue.
-		if (playbackOptionsList != null && !playbackOptionsList.isEmpty())
+		if (loadedPlaybackMap != null && !loadedPlaybackMap.isEmpty())
 		{
 			for (Component childComponent : playbackOptionsPanel.getComponents())
 			{
@@ -676,7 +686,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		}
 		
 		// Disable the playback options panel if nothing is in the queue.
-		if (playbackOptionsList == null || playbackOptionsList.isEmpty())
+		if (loadedPlaybackMap == null || loadedPlaybackMap.isEmpty())
 		{
 			for (Component childComponent : playbackOptionsPanel.getComponents())
 			{
@@ -692,13 +702,13 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		playbackQueueRecordsListModel.clear();
 
 		// Foreach item in the playback queue, display it in the queue control
-		for(PlaybackOptions queueItem : playbackOptionsList )
+		for(PlaybackOptions queueItem : loadedPlaybackMap.keySet())
 		{
 			playbackQueueRecordsListModel.addElement(queueItem.getID());
 		}
 		
 		// Load the first item in the playback queue if it isn't empty.
-		if (!playbackOptionsList.isEmpty())
+		if (!loadedPlaybackMap.isEmpty())
 		{
 			// By setting the selection it will force an auto-save of the last playback settings
 			// and it will populate playback options field.
@@ -715,7 +725,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			return;
 		
 		// Find the matching script file location and select it.
-		for (PlaybackOptions queuedOptions : playbackOptionsList)
+		for (PlaybackOptions queuedOptions : loadedPlaybackMap.keySet())
 		{
 			if (queuedOptions.getID().equals(nameID))
 			{
@@ -1464,7 +1474,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 						// the user is able to keep the playback options they've already created.
 						if(recordNameExistsInQueue(CURRENT_RECORDING_NAME))
 						{
-							for(PlaybackOptions options : playbackOptionsList)
+							for(PlaybackOptions options : loadedPlaybackMap.keySet())
 							{
 								if (options.recordingFileLocation != null && options.recordingFileLocation.equals(CURRENT_RECORDING_NAME))
 									options.recordingFileLocation = fileSaveLocation;
@@ -1472,7 +1482,17 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 						}
 						// Else add the location with default options.
 						else
-							playbackOptionsList.add(new PlaybackOptions(fileSaveLocation));
+						{
+							try
+							{
+								loadedPlaybackMap.put(new PlaybackOptions(fileSaveLocation), new LoadedRecording(fileSaveLocation));
+							}
+							catch (IllegalArgumentException | IOException | DataFormatException e)
+							{
+								System.out.println("There was an error updating the playback queue with the saved current recording..");
+								e.printStackTrace();
+							}
+						}
 					}
 				}
 				// Cancel / X button ==> Don't reset text area.
@@ -1606,7 +1626,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		boolean currentRecordingExists = false;
 		
 		// Checking if "Current Recording" exists in the list already
-		for(PlaybackOptions loadedOptions : playbackOptionsList)
+		for(PlaybackOptions loadedOptions : loadedPlaybackMap.keySet())
 		{
 			if (loadedOptions.recordingFileLocation != null && loadedOptions.recordingFileLocation.equals(recordSaveLocation))
 				currentRecordingExists = true;
@@ -1707,7 +1727,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			System.out.println("Added current recording because text area isn't empty.");
 
 			if (!recordNameExistsInQueue(CURRENT_RECORDING_NAME))
-				playbackOptionsList.add(new PlaybackOptions(CURRENT_RECORDING_NAME));
+				loadedPlaybackMap.put(new PlaybackOptions(CURRENT_RECORDING_NAME), null);
 		}
 		// If the text area is empty, remove the "Current Recording" item from the playback queue.
 		else if(recordingPanelRecordedActionsTextArea.getText().isEmpty())
@@ -1715,12 +1735,14 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			if (recordNameExistsInQueue(CURRENT_RECORDING_NAME))
 			{
 				System.out.println("Deleting current recording because it exists and text area is empty.");
-				for (Iterator<PlaybackOptions> playbackQueueIter = playbackOptionsList.listIterator(); playbackQueueIter.hasNext();)
+				
+				// Find the CURRENT_RECORDING in the playback queue map and remove it.
+				for (Iterator<Map.Entry<PlaybackOptions, LoadedRecording>> mapIter = loadedPlaybackMap.entrySet().iterator(); mapIter.hasNext(); )
 				{
-					PlaybackOptions currOptions = playbackQueueIter.next();
+					PlaybackOptions currOptions = mapIter.next().getKey();
 					
 					if (currOptions.recordingFileLocation != null && currOptions.recordingFileLocation.equals(CURRENT_RECORDING_NAME))
-						playbackQueueIter.remove();
+						mapIter.remove();
 				}
 			}
 		}
