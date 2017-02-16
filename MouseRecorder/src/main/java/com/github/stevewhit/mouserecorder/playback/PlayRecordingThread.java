@@ -158,7 +158,6 @@ class PlayRecordingThread implements Runnable
 			// Only perform the key sequence if the thread wasn't stopped already.
 			if (threadState != PlayThreadStates.Stopped)
 			{
-				System.out.println("Sending finished playback shortcut");
 				pressCertainKeySequence(FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS);
 				
 				// Finished successfully
@@ -372,7 +371,6 @@ class PlayRecordingThread implements Runnable
 	{
 		try
 		{
-			System.out.println("playing for a certain duration.");
 			// If they want to check the pixel color before click, make sure to load the click zone windows.
 			if (checkPixelColorBeforeClick)
 				showLoadedClickZoneWindows();
