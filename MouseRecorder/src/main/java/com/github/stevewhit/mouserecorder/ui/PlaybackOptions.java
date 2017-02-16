@@ -47,11 +47,12 @@ public class PlaybackOptions
 	public boolean repeatLengthOfTimeChecked = false;
 	public int repeatLengthOfTimeNumericalValue = 1;
 	public TimeQuantifier repeatLengthOfTimeTimeQuantifier = TimeQuantifier.Seconds;
-	
+
 	public boolean ignoreClickZonesDuringPlaybackChecked = false;
 	
 	public boolean stopPlaybackQueueIfFailsChecked = false;
 	
 	public boolean runAdditionalScriptIfFailsChecked = false;
 	public String runAdditionalScriptIfFailsFileLocation = null;
+	public LoadedRecording loadedAdditionalScriptIfFails = null;
 }
