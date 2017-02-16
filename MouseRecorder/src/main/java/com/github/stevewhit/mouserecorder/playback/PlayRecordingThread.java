@@ -275,8 +275,25 @@ class PlayRecordingThread implements Runnable
 			Robot robot = new Robot();
 			for(Integer key : keySequenceToPress)
 			{
-				robot.keyPress(key);
+				robot.keyRelease(key);
 			}
+			
+			for(Integer key : keySequenceToPress)
+			{
+				robot.keyPress(key);
+				
+				try
+				{
+					// Sleep for a small amount of time so the key press can be heard.
+					Thread.sleep(20);
+				}
+				catch (InterruptedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 			for(Integer key : keySequenceToPress)
 			{
 				robot.keyRelease(key);
