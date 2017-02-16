@@ -156,9 +156,14 @@ class PlayRecordingThread implements Runnable
 				throw new IllegalStateException("Thread was initialized with invalid values.");
 			}
 			
-			// Finished successfully, press the stop playback shortcut keys.
-			threadState = PlayThreadStates.FinishedSuccessfully;
-			pressCertainKeySequence(playbackStopShortcutKeys);
+			// Only perform the key sequence if the thread wasn't stopped already.
+			if (threadState != PlayThreadStates.Stopped)
+			{
+				pressCertainKeySequence(playbackStopShortcutKeys);
+				
+				// Finished successfully
+				threadState = PlayThreadStates.FinishedSuccessfully;
+			}
 		}
 		catch(AccessException | DataFormatException | InvalidActivityException ex)
 		{
@@ -176,6 +181,7 @@ class PlayRecordingThread implements Runnable
 	public void stop()
 	{
 		threadState = PlayThreadStates.Stopped;
+		//workerThread.interrupt();
 	}
 	
 	/**
