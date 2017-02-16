@@ -19,15 +19,14 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.DataFormatException;
-
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -141,7 +140,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 	
 	/** A list of items in the queue **/
 	private final static String CURRENT_RECORDING_NAME = "Current Recording";
-	private Map<PlaybackOptions, LoadedRecording> loadedPlaybackMap = new HashMap<PlaybackOptions, LoadedRecording>();
+	private Map<PlaybackOptions, LoadedRecording> loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
 	private PlaybackOptions currentPlaybackOptions;
 
 	/** Click Zones that were added to the recording **/
@@ -416,6 +415,59 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		return shortcuts;
 	}
 	
+	private void addAdditionalScriptIfFailsButtonPressed()
+	{
+		System.out.println("Additional script add button pressed.");
+		
+		// Initialize the file chooser
+		final JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+		
+		// Open dialog and wait for user to save.
+		int returnValue = fileChooser.showOpenDialog(this);
+		
+		// Make sure the user actually saved.
+		if (returnValue == JFileChooser.APPROVE_OPTION)
+		{
+			// Verify the filename ends in .txt
+			String fileOpenLocation = fileChooser.getSelectedFile().getPath();
+		
+			if (!fileOpenLocation.endsWith(".txt"))
+			{
+				JOptionPane.showMessageDialog(this, "This file is not a valid recording text file.");
+				return;
+			}
+			
+			// Add the default options to the queue.
+			try
+			{
+				currentPlaybackOptions.loadedAdditionalScriptIfFails = new LoadedRecording(fileOpenLocation);
+				playbackOptionsAdditionalScriptToRunIfFailsTextField.setText(fileOpenLocation);
+				playbackOptionsAddAdditionalScriptIfFailsButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/removeAdditionalScriptButton.png")));
+			}
+			catch (IllegalArgumentException | IOException e)
+			{
+				JOptionPane.showMessageDialog(this, "There was an error trying to read from the file.");
+				return;
+			}
+			catch(DataFormatException e)
+			{
+				JOptionPane.showMessageDialog(this, "This file contains invalid or unsupported data types.");
+				return;
+			}
+		}
+		// Cancel / X button ==> Don't reset text area.
+		else
+			return;
+	}
+	
+	private void removeAdditionalScriptIfFailsButtonPressed()
+	{
+		currentPlaybackOptions.loadedAdditionalScriptIfFails = null;
+		playbackOptionsAdditionalScriptToRunIfFailsTextField.setText("");
+		playbackOptionsAddAdditionalScriptIfFailsButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/addButton.png")));
+	}
+	
 	private void playbackQueueAddButtonPressed()
 	{
 		System.out.println("QueueAdd button pressed");
@@ -569,10 +621,18 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 	}
 	
 	private void addPlaybackItemToQueue(PlaybackOptions playbackOptions) throws IllegalArgumentException, IOException, DataFormatException
-	{		
-		// Add the item to the playbackQueueList
-		loadedPlaybackMap.put(playbackOptions, new LoadedRecording(playbackOptions.recordingFileLocation));
+	{	
+		LoadedRecording loadedRecording = new LoadedRecording(playbackOptions.recordingFileLocation);
 		
+		// Enable or disable certain options based on if there are even click zones available.
+		if (loadedRecording.getClickZoneDetails().size() <= 0)
+		{
+			playbackOptions.ignoreClickZonesDuringPlaybackChecked = true;
+		}
+
+		// Add the item to the playbackQueueList
+		loadedPlaybackMap.put(playbackOptions, loadedRecording);
+
 		// Add the item to the viewer
 		playbackQueueRecordsListModel.addElement(playbackOptions.getID());
 		
@@ -659,9 +719,6 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			e.printStackTrace();
 		}
 		
-		/********************************* Ignore click-zones control************************************************/
-		playbackOptionsIgnoreClickZonesDuringPlaybackCheckBox.setSelected(currentPlaybackOptions.ignoreClickZonesDuringPlaybackChecked);
-		
 		/********************************* Load stop playback if fails controls************************************************/
 		playbackOptionsStopPlaybackQueueIfFailsCheckBox.setSelected(currentPlaybackOptions.stopPlaybackQueueIfFailsChecked);
 		
@@ -670,9 +727,17 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		playbackOptionsAdditionalScriptToRunIfFailsTextField.setText(currentPlaybackOptions.runAdditionalScriptIfFailsFileLocation);
 		playbackOptionsAdditionalScriptToRunIfFailsTextField.setEnabled(playbackOptionsRunAdditionalScriptIfFailsCheckBox.isSelected());
 		playbackOptionsAddAdditionalScriptIfFailsButton.setEnabled(playbackOptionsRunAdditionalScriptIfFailsCheckBox.isSelected());
+		
+		if (playbackOptionsAdditionalScriptToRunIfFailsTextField.getText().isEmpty())
+			playbackOptionsAddAdditionalScriptIfFailsButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/addButton.png")));
+		else
+			playbackOptionsAddAdditionalScriptIfFailsButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/removeAdditionalScriptButton.png")));
+		
+		/********************************* Ignore click-zones control************************************************/
+		playbackOptionsIgnoreClickZonesDuringPlaybackCheckBox.setSelected(currentPlaybackOptions.ignoreClickZonesDuringPlaybackChecked);
 
 		// Now turn on and off certain controls based on what is selected.
-		if (currentPlaybackOptions.ignoreClickZonesDuringPlaybackChecked)
+		if (playbackOptionsIgnoreClickZonesDuringPlaybackCheckBox.isSelected())
 		{
 			// disable the fails options.
 			playbackOptionsStopPlaybackQueueIfFailsCheckBox.setEnabled(false);
@@ -684,6 +749,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			playbackOptionsRunAdditionalScriptIfFailsCheckBox.setEnabled(false);
 			playbackOptionsRunAdditionalScriptIfFailsCheckBox.setSelected(false);
 		}
+		
 		
 		// Disable the playback options panel if nothing is in the queue.
 		if (loadedPlaybackMap == null || loadedPlaybackMap.isEmpty())
@@ -934,7 +1000,17 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				System.out.println("Add button pressed");
+				// Add script and change icon.
+				if (playbackOptionsAdditionalScriptToRunIfFailsTextField.getText().isEmpty())
+				{
+					addAdditionalScriptIfFailsButtonPressed();
+					
+				}
+				// Remove script and change icon.
+				else
+				{
+					removeAdditionalScriptIfFailsButtonPressed();
+				}
 				
 			}
 		});
