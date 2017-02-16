@@ -110,11 +110,10 @@ class PlayRecordingThread implements Runnable
 	private Long pauseEndMilliseconds;
 	
 	/**
-	 * The keyboard key sequence that if pressed, stops the playback from playing.
-	 * Note: There is another listener thread listening for these keys so by pressing them,
-	 * it forces the playback to stop.
+	 * The keyboard key sequence that if pressed, notifies the main GUI that playback is completed.
+	 * Note: There is another listener thread listening for these keys
 	 */
-	private Integer[] playbackStopShortcutKeys;
+	private Integer[] FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS;
 	
 	/**
 	 * The keyboard key sequence that if pressed, notifies the playback player that there was an issue during playback.
@@ -159,7 +158,8 @@ class PlayRecordingThread implements Runnable
 			// Only perform the key sequence if the thread wasn't stopped already.
 			if (threadState != PlayThreadStates.Stopped)
 			{
-				pressCertainKeySequence(playbackStopShortcutKeys);
+				System.out.println("Sending finished playback shortcut");
+				pressCertainKeySequence(FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS);
 				
 				// Finished successfully
 				threadState = PlayThreadStates.FinishedSuccessfully;
@@ -224,12 +224,12 @@ class PlayRecordingThread implements Runnable
 	 * @param startImmediately Enable or diable starting immediately. If not, thread will be in the paused position.
 	 * @param checkPixelColorBeforeClick Enable or disable using click zones.
 	 * @param numTimesToRepeat The integer value of the number of times to repeat the same recording.
-	 * @param playbackStopShortcutKeys The shortcut keys used to stop the playback.
+	 * @param FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS The shortcut keys that should be pressed when playback is completed.
 	 * @param ERROR_DURING_PLAYBACK_SHORTCUT_KEYS The shortcut keys used to notify the GUI and error occured during playback.
 	 */
-	public void start(boolean startImmediately, boolean checkPixelColorBeforeClick, int numTimesToRepeat, Integer[] playbackStopShortcutKeys, Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS)
+	public void start(boolean startImmediately, boolean checkPixelColorBeforeClick, int numTimesToRepeat, Integer[] FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS, Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS)
 	{
-		this.playbackStopShortcutKeys = playbackStopShortcutKeys;
+		this.FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS = FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS;
 		this.ERROR_DURING_PLAYBACK_SHORTCUT_KEYS = ERROR_DURING_PLAYBACK_SHORTCUT_KEYS;
 		
 		this.checkPixelColorBeforeClick = checkPixelColorBeforeClick;
@@ -248,12 +248,12 @@ class PlayRecordingThread implements Runnable
 	 * @param checkPixelColorBeforeClick Enable or disable using click zones.
 	 * @param durationNumericalValue The number value representing the number of 'timequalifiers' 
 	 * @param timeQuantifier Indicates Seconds, Minutes, Hours.. etc
-	 * @param playbackStopShortcutKeys The shortcut keys that are being listened for to stop the playback player.
+	 * @param FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS The shortcut keys that should be pressed when playback is completed.
 	 * @param ERROR_DURING_PLAYBACK_SHORTCUT_KEYS The shortcut keys that should be pressed if there is an issue during playback.
 	 */
-	public void start(boolean startImmediately, boolean checkPixelColorBeforeClick, int durationNumericalValue, TimeQuantifier durationTimeQuantifier, Integer[] playbackStopShortcutKeys, Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS)
+	public void start(boolean startImmediately, boolean checkPixelColorBeforeClick, int durationNumericalValue, TimeQuantifier durationTimeQuantifier, Integer[] FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS, Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS)
 	{
-		this.playbackStopShortcutKeys = playbackStopShortcutKeys;
+		this.FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS = FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS;
 		this.ERROR_DURING_PLAYBACK_SHORTCUT_KEYS = ERROR_DURING_PLAYBACK_SHORTCUT_KEYS;
 		
 		this.checkPixelColorBeforeClick = checkPixelColorBeforeClick;
@@ -372,6 +372,7 @@ class PlayRecordingThread implements Runnable
 	{
 		try
 		{
+			System.out.println("playing for a certain duration.");
 			// If they want to check the pixel color before click, make sure to load the click zone windows.
 			if (checkPixelColorBeforeClick)
 				showLoadedClickZoneWindows();

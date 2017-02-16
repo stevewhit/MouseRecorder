@@ -122,20 +122,20 @@ public class PlaybackEngine
 	 * Plays the loaded recording for a given number of times.
 	 * @param checkPixelColorBeforeClick Enable or diable whether the playback should check for pixel colors before any clicking action and force stop if invalid colors are detected.
 	 * @param numTimesToRepeat The number of times to repeat the same recording.
-	 * @param playbackStopShortcutKeys The shortcut keys that are being listened for to stop the playback player.
+	 * @param FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS The shortcut keys that should be pressed one playback is completed.
 	 * @param ERROR_DURING_PLAYBACK_SHORTCUT_KEYS The shortcut keys that should be pressed if there is an issue during playback.
 	 * @throws DataFormatException Throws if an invalid action is found during playback.
 	 * @throws InvalidActivityException Throws if we're validating pixel colors and an incorrect pixel color is found.
 	 * @throws AccessException Throws if there's an issue reading the screen pixels during playback.
 	 */
-	public void playLoadedRecording(boolean checkPixelColorBeforeClick, int numTimesToRepeat, Integer[] playbackStopShortcutKeys, Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS) throws DataFormatException, InvalidActivityException, AccessException
+	public void playLoadedRecording(boolean checkPixelColorBeforeClick, int numTimesToRepeat, Integer[] FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS, Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS) throws DataFormatException, InvalidActivityException, AccessException
 	{
 		if (currentPlaybackThread != null)
 			currentPlaybackThread.stop();
 		
 		// Create a new thread and start it.
 		currentPlaybackThread = new PlayRecordingThread(loadedRecordingClickZones, loadedRecordingWithWaits);
-		currentPlaybackThread.start(true, checkPixelColorBeforeClick, numTimesToRepeat, playbackStopShortcutKeys, ERROR_DURING_PLAYBACK_SHORTCUT_KEYS);
+		currentPlaybackThread.start(true, checkPixelColorBeforeClick, numTimesToRepeat, FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS, ERROR_DURING_PLAYBACK_SHORTCUT_KEYS);
 	}
 	
 	/**
@@ -143,14 +143,14 @@ public class PlaybackEngine
 	 * @param checkPixelColorBeforeClick Enable or diable whether the playback should check for pixel colors before any clicking action and force stop if invalid colors are detected.
 	 * @param durationNumericalValue The number value representing the number of 'timequalifiers' 
 	 * @param timeQuantifier Indicates Seconds, Minutes, Hours.. etc
-	 * @param playbackStopShortcutKeys The shortcut keys that are being listened for to stop the playback player.
+	 * @param FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS The shortcut keys that should be pressed when playback is completed.
 	 * @param ERROR_DURING_PLAYBACK_SHORTCUT_KEYS The shortcut keys that should be pressed if there is an issue during playback.
 	 * @return Returns true if the player is finished playing the recording.
 	 * @throws DataFormatException Throws if an invalid action is found during playback.
 	 * @throws InvalidActivityException Throws if we're validating pixel colors and an incorrect pixel color is found.
 	 * @throws AccessException Throws if there's an issue reading the screen pixels during playback.
 	 */
-	public void playLoadedRecording(boolean checkPixelColorBeforeClick, int durationNumericalValue, TimeQuantifier timeQuantifier, Integer[] playbackStopShortcutKeys, Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS) throws DataFormatException, InvalidActivityException, AccessException
+	public void playLoadedRecording(boolean checkPixelColorBeforeClick, int durationNumericalValue, TimeQuantifier timeQuantifier, Integer[] FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS, Integer[] ERROR_DURING_PLAYBACK_SHORTCUT_KEYS) throws DataFormatException, InvalidActivityException, AccessException
 	{
 		if (currentPlaybackThread != null)
 			currentPlaybackThread.stop();
@@ -159,7 +159,7 @@ public class PlaybackEngine
 		
 		// Create a new thread and start it.
 		currentPlaybackThread = new PlayRecordingThread(loadedRecordingClickZones, loadedRecordingWithWaits);
-		currentPlaybackThread.start(true, checkPixelColorBeforeClick, durationNumericalValue, timeQuantifier, playbackStopShortcutKeys, ERROR_DURING_PLAYBACK_SHORTCUT_KEYS);
+		currentPlaybackThread.start(true, checkPixelColorBeforeClick, durationNumericalValue, timeQuantifier, FINISHED_PLAYBACK_ITEM_SHORTCUT_KEYS, ERROR_DURING_PLAYBACK_SHORTCUT_KEYS);
 	}
 	
 	/**
@@ -182,8 +182,6 @@ public class PlaybackEngine
 	{
 		if (currentPlaybackThread != null && currentPlaybackThread.getState() == PlayThreadStates.Paused)
 			currentPlaybackThread.resume();
-		else
-			throw new IllegalStateException("Cannot resume a recording that isn't even paused or is null.");
 	}
 	
 	/**
