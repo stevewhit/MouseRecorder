@@ -31,7 +31,7 @@ public class PlaybackOptions
 		timeCreated = System.currentTimeMillis();
 		this.recordingFileLocation = scriptFileLocation;
 	}
-	
+
 	private long timeCreated;
 	
 	public String getID()
@@ -55,4 +55,21 @@ public class PlaybackOptions
 	public boolean runAdditionalScriptIfFailsChecked = false;
 	public String runAdditionalScriptIfFailsFileLocation = null;
 	public LoadedRecording loadedAdditionalScriptIfFails = null;
+	
+	public String toExportableString()
+	{
+		return String.format("playbackitem:%1$s:%2$s:%3$d:%4$s:%5$d:%6$s:%7$s:%8$s:%9$s:%10$s", 
+								recordingFileLocation, 
+								String.valueOf(repeatNumTimesChecked),
+								repeatNumTimesNumericalValue,
+								String.valueOf(repeatLengthOfTimeChecked),
+								repeatLengthOfTimeNumericalValue,
+								
+								String.valueOf(repeatLengthOfTimeTimeQuantifier),
+								String.valueOf(ignoreClickZonesDuringPlaybackChecked),
+								String.valueOf(stopPlaybackQueueIfFailsChecked),
+								String.valueOf(runAdditionalScriptIfFailsChecked),
+								loadedAdditionalScriptIfFails == null ? "_" : loadedAdditionalScriptIfFails.getFileLocationPath()
+								);
+	}
 }
