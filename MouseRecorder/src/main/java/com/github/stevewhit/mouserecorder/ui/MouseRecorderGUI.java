@@ -150,6 +150,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 	private DefaultListModel<String> playbackQueueRecordsListModel = new DefaultListModel<String>();
 	private JList<String> playbackQueueRecordsList;
 	
+	private String loadedConfigurationFilePath = null;
+	
 	/** A list of items in the queue **/
 	private final static String CURRENT_RECORDING_NAME = "Current Recording";
 	private Map<PlaybackOptions, LoadedRecording> loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
@@ -204,7 +206,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		// Set the title bar and layout.
 		setTitle("Mouse Recorder By Steve Whitmire");
 		setLayout(new BorderLayout());
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		
 		addMenuToFrame();
 		
@@ -839,7 +841,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		
 		JMenu fileMenu = new JMenu("File");
 		JMenuItem menuBarFileSaveRecording = new JMenuItem("Save Recording..");
-		JMenuItem menuBarFileSaveConfiguration = new JMenuItem("Save configuration..");
+		JMenuItem menuBarFileSaveConfiguration = new JMenuItem("Save Configuration..");
 		JMenuItem menuBarFileLoadConfiguration = new JMenuItem("Load Configuration..");
 
 		JMenuItem menuBarFileExit = new JMenuItem("Exit");
@@ -893,7 +895,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				resetPlaybackOptionsAndQueue(false);
+				resetPlaybackOptionsAndQueue(false, false);
 			}
 		});
 		
@@ -917,7 +919,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			{
 				if (iconSelectionNewButton.isEnabled())
 				{
-					resetPlaybackOptionsAndQueue(true);
+					resetPlaybackOptionsAndQueue(true, true);
 				}
 				
 				try
@@ -1336,7 +1338,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				
 				if (currentRecordingState == RecordingStates.Disable)
 				{
-					resetPlaybackOptionsAndQueue(true);
+					resetPlaybackOptionsAndQueue(true, true);
+					loadedConfigurationFilePath = null;
 				}
 				else if (currentPlaybackState == PlaybackStates.Disable)
 				{
@@ -2201,6 +2204,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				this.currentPlaybackState = PlaybackStates.Play;
 				break;
 			case Pause:
+				this.setState(JFrame.NORMAL);
 				playbackPlayer.pausePlayback();
 				iconSelectionPlayPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/playButton.png")));
 				iconSelectionPlayPauseResumeButton.setText("Resume");
@@ -2221,6 +2225,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				this.currentPlaybackState = PlaybackStates.Stop;
 				break;
 			case Resume:
+				setState(JFrame.ICONIFIED);
 				this.currentPlaybackState = PlaybackStates.Play;
 				iconSelectionChangeViewButton.setEnabled(false);
 				iconSelectionNewButton.setEnabled(false);
@@ -2256,7 +2261,10 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				
 				// Prompt user to save current playback config and recording file.
 				// Also clear the viewing area.
-				resetPlaybackOptionsAndQueue(true);
+				boolean userWantsToContinue = resetPlaybackOptionsAndQueue(true, true);
+				
+				if (!userWantsToContinue)
+					return;
 				
 				// Need to load each of the playback options.
 				for(PlaybackOptions options : importedPlaybackConfig)
@@ -2267,6 +2275,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				refreshPlaybackQueue();
 				setRecordingState(RecordingStates.Disable);
 				setPlaybackState(PlaybackStates.Enable);
+				loadedConfigurationFilePath = fileConfigLocation;
 			}
 			catch (IllegalArgumentException | IOException ex)
 			{
@@ -2281,7 +2290,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		}
 	}
 	
-	private boolean resetPlaybackOptionsAndQueue(boolean promptUserToSaveConfig)
+	private boolean resetPlaybackOptionsAndQueue(boolean promptUserToSaveConfig, boolean clearPlaybackQueueWhenCompleted)
 	{
 		setRecordingState(RecordingStates.Enable);
 		setPlaybackState(PlaybackStates.Disable);
@@ -2313,19 +2322,27 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		// Yes
 		if (userAnswer == JOptionPane.YES_OPTION)	
 		{
-			// Initialize the file chooser
+			int returnValue = -1;
 			final JFileChooser fileChooser = new JFileChooser();
-			fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
-			fileChooser.setDialogTitle("Save Configuration");
 			
-			// Open dialog and wait for user to save.
-			int returnValue = fileChooser.showSaveDialog(this);
+			if (loadedConfigurationFilePath == null)
+			{
+				// Initialize the file chooser
+				fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+				fileChooser.setDialogTitle("Save Configuration");
+				
+				// Open dialog and wait for user to save.
+				returnValue = fileChooser.showSaveDialog(this);
+			}
+			else
+				returnValue = JFileChooser.APPROVE_OPTION;
 			
 			// Make sure the user actually saved.
 			if (returnValue == JFileChooser.APPROVE_OPTION)
 			{
 				// Verify the filename ends in .txt, if not, add it for them.
-				String fileSaveLocation = fileChooser.getSelectedFile().getPath();
+				String fileSaveLocation = loadedConfigurationFilePath == null ? fileChooser.getSelectedFile().getPath() : loadedConfigurationFilePath;
+				System.out.println("Saving config to: " + fileSaveLocation);
 				
 				if (!fileSaveLocation.endsWith(".txt"))
 				{
@@ -2352,26 +2369,30 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			else
 				return false;
 			
-			// Remove all items from the queue
-			loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
-			refreshPlaybackQueue();
-			refreshPlaybackControls();
-			setRecordingState(RecordingStates.Disable);
-			setPlaybackState(PlaybackStates.Enable);
-			showPlaybackControls(new PlaybackOptions(null));
-			
+			if (clearPlaybackQueueWhenCompleted)
+			{
+				// Remove all items from the queue
+				loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
+				refreshPlaybackQueue();
+				refreshPlaybackControls();
+				setRecordingState(RecordingStates.Disable);
+				setPlaybackState(PlaybackStates.Enable);
+				showPlaybackControls(new PlaybackOptions(null));
+			}
 			return true;
 		}
 		else if (userAnswer == JOptionPane.NO_OPTION)
 		{
-			// Remove all items from the queue
-			loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
-			refreshPlaybackQueue();
-			refreshPlaybackControls();
-			setRecordingState(RecordingStates.Disable);
-			setPlaybackState(PlaybackStates.Enable);
-			showPlaybackControls(new PlaybackOptions(null));
-			
+			if (clearPlaybackQueueWhenCompleted)
+			{
+				// Remove all items from the queue
+				loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
+				refreshPlaybackQueue();
+				refreshPlaybackControls();
+				setRecordingState(RecordingStates.Disable);
+				setPlaybackState(PlaybackStates.Enable);
+				showPlaybackControls(new PlaybackOptions(null));
+			}
 			return true;
 		}
 		else 
@@ -2394,7 +2415,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 	 */
 	public void windowClosing(WindowEvent e) { 
 		
-		resetPlaybackOptionsAndQueue(true);
+		if (resetPlaybackOptionsAndQueue(true, true))
+			this.dispose();
 	}
 
 	/**
