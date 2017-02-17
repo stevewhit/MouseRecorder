@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.zip.DataFormatException;
-import com.github.stevewhit.mouserecorder.datahandling.ActionDataHandlerUtils;
+import com.github.stevewhit.mouserecorder.datahandling.DataIOHandlerUtils;
 import com.github.stevewhit.mouserecorder.userinputs.AbstractInputAction;
 
 public class LoadedRecording
@@ -77,9 +77,9 @@ public class LoadedRecording
 	 */
 	private void loadRecordingInformationFromFile() throws IllegalArgumentException, IOException, DataFormatException
 	{
-		final ArrayList<String> importedData = ActionDataHandlerUtils.importStringDataFromFile(fileLocationPath);
+		final ArrayList<String> importedData = DataIOHandlerUtils.importStringDataFromFile(fileLocationPath);
 		
-		inputActionList = ActionDataHandlerUtils.convertToActionData(new LinkedList<>(ActionDataHandlerUtils.extractInputActionStringData(importedData)));
-		clickZoneDetails = ActionDataHandlerUtils.convertToClickZoneDetailsData(ActionDataHandlerUtils.extractClickZoneStringData(importedData));
+		inputActionList = DataIOHandlerUtils.convertToActionData(new LinkedList<>(DataIOHandlerUtils.extractInputActionStringData(importedData)));
+		clickZoneDetails = DataIOHandlerUtils.convertToClickZoneDetailsData(DataIOHandlerUtils.extractClickZoneStringData(importedData));
 	}
 }

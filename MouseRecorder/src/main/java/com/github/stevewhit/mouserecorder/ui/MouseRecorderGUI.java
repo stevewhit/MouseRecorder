@@ -63,7 +63,7 @@ import javax.swing.text.NumberFormatter;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.SwingDispatchService;
-import com.github.stevewhit.mouserecorder.datahandling.ActionDataHandlerUtils;
+import com.github.stevewhit.mouserecorder.datahandling.DataIOHandlerUtils;
 import com.github.stevewhit.mouserecorder.inputtracking.GlobalInputRecorder;
 import com.github.stevewhit.mouserecorder.inputtracking.GlobalUserShortcutListener;
 import com.github.stevewhit.mouserecorder.playback.PlaybackEngine;
@@ -1650,7 +1650,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 						exportData.addAll(getExportableClickZoneList());
 						exportData.addAll(recordedActions);
 						
-						ActionDataHandlerUtils.exportStringDataToFile(exportData, fileSaveLocation);
+						DataIOHandlerUtils.exportStringDataToFile(exportData, fileSaveLocation);
 					}
 					catch (IllegalArgumentException | IOException e)
 					{
@@ -2071,8 +2071,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			// If we have the Current Recording file.
 			if (currentlyPlayingOptionsAndRecording.options.recordingFileLocation.equals(CURRENT_RECORDING_NAME))
 			{
-				actionsToPlay = (LinkedList<AbstractInputAction>) ActionDataHandlerUtils.convertToActionData(new LinkedList<>(new ArrayList<>(recordedActions)));
-				clickZonesToUse = ActionDataHandlerUtils.convertToClickZoneDetailsData(getExportableClickZoneList());
+				actionsToPlay = (LinkedList<AbstractInputAction>) DataIOHandlerUtils.convertToActionData(new LinkedList<>(new ArrayList<>(recordedActions)));
+				clickZonesToUse = DataIOHandlerUtils.convertToClickZoneDetailsData(getExportableClickZoneList());
 			}
 			else
 			{

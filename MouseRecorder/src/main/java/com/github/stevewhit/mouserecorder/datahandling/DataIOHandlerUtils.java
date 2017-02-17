@@ -33,12 +33,12 @@ import com.github.stevewhit.mouserecorder.userinputs.mouse.MouseMove;
  * @author Steve Whitmire (swhit114@gmail.com)
  *
  */
-public class ActionDataHandlerUtils
+public class DataIOHandlerUtils
 {
 	/**
 	 * Private constructor to utilize this class as static.
 	 */
-	private ActionDataHandlerUtils() {}
+	private DataIOHandlerUtils() {}
 	
 	/**
 	 * Export the given list to the desired save location. It utilizes the toString() method on each object to write it to the location.

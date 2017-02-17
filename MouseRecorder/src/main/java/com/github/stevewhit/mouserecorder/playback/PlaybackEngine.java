@@ -9,7 +9,7 @@ import java.util.Queue;
 import java.util.zip.DataFormatException;
 import javax.activation.UnsupportedDataTypeException;
 import javax.activity.InvalidActivityException;
-import com.github.stevewhit.mouserecorder.datahandling.ActionDataHandlerUtils;
+import com.github.stevewhit.mouserecorder.datahandling.DataIOHandlerUtils;
 import com.github.stevewhit.mouserecorder.playback.PlayRecordingThread.PlayThreadStates;
 import com.github.stevewhit.mouserecorder.ui.ClickZoneDetails;
 import com.github.stevewhit.mouserecorder.ui.PlaybackOptions.TimeQuantifier;
@@ -72,12 +72,12 @@ public class PlaybackEngine
 			if (useClickZones)
 			{
 				// Load recording and click zones.
-				loadNewRecording(new LinkedList<>(ActionDataHandlerUtils.importActionDataFromFile(filePath)), ActionDataHandlerUtils.importClickZoneDataFromFile(filePath));
+				loadNewRecording(new LinkedList<>(DataIOHandlerUtils.importActionDataFromFile(filePath)), DataIOHandlerUtils.importClickZoneDataFromFile(filePath));
 			}
 			else
 			{
 				// Load recording only.
-				loadNewRecording(new LinkedList<>(ActionDataHandlerUtils.importActionDataFromFile(filePath)));
+				loadNewRecording(new LinkedList<>(DataIOHandlerUtils.importActionDataFromFile(filePath)));
 			}
 		}
 		catch(IllegalArgumentException | IOException | DataFormatException ex)
