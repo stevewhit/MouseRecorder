@@ -17,6 +17,9 @@ import com.github.stevewhit.mouserecorder.monitor.PixelColor;
 import com.github.stevewhit.mouserecorder.monitor.PixelCoordinate2D;
 import com.github.stevewhit.mouserecorder.monitor.ScreenUtils;
 import com.github.stevewhit.mouserecorder.ui.ClickZoneDetails;
+import com.github.stevewhit.mouserecorder.ui.LoadedRecording;
+import com.github.stevewhit.mouserecorder.ui.PlaybackOptions;
+import com.github.stevewhit.mouserecorder.ui.PlaybackOptions.TimeQuantifier;
 import com.github.stevewhit.mouserecorder.userinputs.AbstractInputAction;
 import com.github.stevewhit.mouserecorder.userinputs.keyboard.AbstractKeyboardInputAction;
 import com.github.stevewhit.mouserecorder.userinputs.keyboard.KeyboardKeyPress;
@@ -299,6 +302,57 @@ public class DataIOHandlerUtils
 		}
 		
 		return processedDetailsData;
+	}
+	
+	public static ArrayList<PlaybackOptions> importPlaybackConfigurationFromFile(String fileLocation) throws IllegalArgumentException, IOException, DataFormatException
+	{
+		// Import the data from the file location.
+		final ArrayList<String> importedPlaybackOptions = importStringDataFromFile(fileLocation);
+		final ArrayList<PlaybackOptions> importedPlaybackOptionsList = new ArrayList<>();
+		
+		for(String playbackItemDetails : importedPlaybackOptions)
+		{
+			try
+			{
+				String[] splitLine = playbackItemDetails.split(":");
+			
+				if (!splitLine[0].equals("PLAYBACKITEM"))
+					throw new UnsupportedDataTypeException("Found invalid dataline in file: " + splitLine);
+				
+				if (splitLine.length != 11)
+					throw new DataFormatException("Data line doesn't contain the proper amount of entries: " + splitLine);
+				
+				final PlaybackOptions generatedOptions = new PlaybackOptions(splitLine[1]);
+				
+				// Parse the line for necessary data.
+				generatedOptions.repeatNumTimesChecked = Boolean.valueOf(splitLine[2]);
+				generatedOptions.repeatNumTimesNumericalValue = Integer.valueOf(splitLine[3]);
+				generatedOptions.repeatLengthOfTimeChecked = Boolean.valueOf(splitLine[4]);
+				generatedOptions.repeatLengthOfTimeNumericalValue = Integer.valueOf(splitLine[5]);
+				generatedOptions.repeatLengthOfTimeTimeQuantifier = TimeQuantifier.valueOf(splitLine[6]);
+				generatedOptions.ignoreClickZonesDuringPlaybackChecked = Boolean.valueOf(splitLine[7]);
+				generatedOptions.stopPlaybackQueueIfFailsChecked = Boolean.valueOf(splitLine[8]);
+				generatedOptions.runAdditionalScriptIfFailsChecked = Boolean.valueOf(splitLine[9]);
+				
+				if (splitLine[10] != "_")
+				{
+					generatedOptions.runAdditionalScriptIfFailsFileLocation = splitLine[10];
+					generatedOptions.loadedAdditionalScriptIfFails = new LoadedRecording(splitLine[10]);
+				}
+				
+				importedPlaybackOptionsList.add(generatedOptions);
+			}		
+			catch (IndexOutOfBoundsException ex)
+			{
+				throw new DataFormatException("Could not access necessary information when parsing to create a valid playback option.");
+			}
+			catch(UnsupportedDataTypeException | IllegalArgumentException | DataFormatException ex)
+			{
+				throw new DataFormatException("Could not properly import playback configuration because ==> " + ex.getMessage());
+			}
+		}
+		
+		return importedPlaybackOptionsList;
 	}
 	
 	/**
