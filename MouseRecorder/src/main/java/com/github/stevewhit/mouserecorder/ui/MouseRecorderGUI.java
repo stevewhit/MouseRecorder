@@ -137,6 +137,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 	private JTextField playbackOptionsAdditionalScriptToRunIfFailsTextField = new JTextField();
 	private JButton playbackOptionsAddAdditionalScriptIfFailsButton = new JButton();
 	
+	private JButton playbackQueueAddButton = new JButton();
 	private JButton playbackQueueRemoveButton = new JButton();
 	
 	private JPanel queueButtonPanel = new JPanel(new GridBagLayout());
@@ -1070,11 +1071,10 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		playbackQueuePanel.setBorder(new TitledBorder("Playback Queue"));
 
 		/********************************************Queue button panels***************************************************************/
-		JButton queueAddButton = new JButton();
-		queueAddButton.setPreferredSize(new Dimension(56, 27));
-		queueAddButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/addQueueButton.png")));
+		playbackQueueAddButton.setPreferredSize(new Dimension(56, 27));
+		playbackQueueAddButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/addQueueButton.png")));
 		
-		queueAddButton.addActionListener(new ActionListener()
+		playbackQueueAddButton.addActionListener(new ActionListener()
 		{
 			@Override
 			public void actionPerformed(ActionEvent e)
@@ -1089,7 +1089,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		gbc.gridy = 0;
 		gbc.weightx = 0;
 		gbc.weighty = 0;
-		queueButtonPanel.add(queueAddButton, gbc);
+		queueButtonPanel.add(playbackQueueAddButton, gbc);
 		
 		// Adds a space between the add and remove buttons for formatting.
 		JLabel spaceFiller = new JLabel("");
@@ -1191,8 +1191,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				}
 				else
 				{
-					setRecordingState(RecordingStates.Enable);
 					setPlaybackState(PlaybackStates.Disable);
+					setRecordingState(RecordingStates.Enable);
 				}
 			}
 		});
@@ -1387,7 +1387,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		
 		for (ClickZoneWindow window : addedClickZones)
 		{
-			window.setVisible(true);
+			if (window != null && window.isDisplayable())
+				window.setVisible(true);
 		}
 	}
 	
@@ -1881,6 +1882,11 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		{
 			childComponent.setEnabled(true);
 		}
+		
+		if (currentPlaybackOptions == null)
+			currentPlaybackOptions = new PlaybackOptions(null);
+		
+		showPlaybackControls(currentPlaybackOptions);
 	}
 	
 	private void disablePanelsAndButtonsForPlayback()
@@ -1907,7 +1913,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			showPlaybackControls(currentPlaybackOptions);
 			setPlaybackState(PlaybackStates.Stop);
 
-			// Minimize window.
+			// Restore window.
 			this.setState(JFrame.NORMAL);
 			
 			return;
@@ -2028,6 +2034,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				addCurrentRecordingToQueueIfNeeded();
 				refreshPlaybackQueue();
 				iconSelectionNewButton.setEnabled(!playbackQueueRecordsListModel.isEmpty());
+				playbackQueueAddButton.setEnabled(true);
 				break;
 			case Play:
 				if (loadedPlaybackMap == null || loadedPlaybackMap.size() <= 0)
@@ -2054,11 +2061,14 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			case Stop:
 				playbackPlayer.stopPlaybackAndUnload();
 				loadedPlaybackOptionsAndRecordings = null;
+				reenablePanelsAndButtonsAfterPlayback();
+				this.setState(JFrame.NORMAL);
 				iconSelectionPlayPauseResumeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/playButton.png")));
 				iconSelectionPlayPauseResumeButton.setText("Play All");
 				iconSelectionStopPlayButton.setEnabled(false);
 				iconSelectionChangeViewButton.setEnabled(true);
-				iconSelectionNewButton.setEnabled(true);
+				iconSelectionNewButton.setEnabled(loadedPlaybackMap != null && !loadedPlaybackMap.isEmpty());
+				playbackQueueRemoveButton.setEnabled(loadedPlaybackMap != null && !loadedPlaybackMap.isEmpty());
 				this.currentPlaybackState = PlaybackStates.Stop;
 				break;
 			case Resume:
@@ -2085,6 +2095,14 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		
 		setRecordingState(RecordingStates.Disable);
 		setPlaybackState(PlaybackStates.Enable);
+		
+		if (playbackQueueRecordsListModel.isEmpty())
+		{
+			loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
+			refreshPlaybackQueue();
+			refreshPlaybackControls();
+			return;
+		}
 		
 		// Show dialog
 		int userAnswer = JOptionPane.showConfirmDialog(
@@ -2118,13 +2136,17 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				System.out.println("Save config stuff here..");
 			}
 			
-			// Show default playback contols.
-			showPlaybackControls(new PlaybackOptions(null));
+			// Remove all items from the queue
+			loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
+			refreshPlaybackQueue();
+			refreshPlaybackControls();
 		}
 		else if (userAnswer == JOptionPane.NO_OPTION)
 		{
-			// Show default playback contols.
-			showPlaybackControls(new PlaybackOptions(null));
+			// Remove all items from the queue
+			loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
+			refreshPlaybackQueue();
+			refreshPlaybackControls();
 		}
 		else 
 		{
