@@ -276,7 +276,6 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 
 		// Add a keyboard event listener for the entire frame and all its components
 		// To listen for shortcut combinations.
-		//KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(this);
 		startUserShortcutListener();
 		
 		// Disable parent logger and set the desired level.
@@ -297,8 +296,10 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		setResizable(false);
 		setPreferredSize(new Dimension(490, 600));
 		pack();
+		setAlwaysOnTop(true);
 		setVisible(true);
-		
+		setState(JFrame.NORMAL);
+		setAlwaysOnTop(false);
 	}
 	
 	private void startUserShortcutListener()
@@ -525,7 +526,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			// Add the default options to the queue.
 			try
 			{
-				addPlaybackItemToQueue(defaultOptions);
+				addPlaybackItemToQueue(defaultOptions, false);
 			}
 			catch (IllegalArgumentException | IOException e)
 			{
@@ -647,12 +648,12 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		}
 	}
 	
-	private void addPlaybackItemToQueue(PlaybackOptions playbackOptions) throws IllegalArgumentException, IOException, DataFormatException
+	private void addPlaybackItemToQueue(PlaybackOptions playbackOptions, boolean keepOriginalButtons) throws IllegalArgumentException, IOException, DataFormatException
 	{	
 		LoadedRecording loadedRecording = new LoadedRecording(playbackOptions.recordingFileLocation);
 		
 		// Enable or disable certain options based on if there are even click zones available.
-		if (loadedRecording.getClickZoneDetails().size() <= 0)
+		if (!keepOriginalButtons && loadedRecording.getClickZoneDetails().size() <= 0)
 		{
 			playbackOptions.ignoreClickZonesDuringPlaybackChecked = true;
 		}
@@ -839,6 +840,8 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		JMenu fileMenu = new JMenu("File");
 		JMenuItem menuBarFileSaveRecording = new JMenuItem("Save Recording..");
 		JMenuItem menuBarFileSaveConfiguration = new JMenuItem("Save configuration..");
+		JMenuItem menuBarFileLoadConfiguration = new JMenuItem("Load Configuration..");
+
 		JMenuItem menuBarFileExit = new JMenuItem("Exit");
 		
 		fileMenu.addMenuListener(new MenuListener()
@@ -847,15 +850,16 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			@Override
 			public void menuSelected(MenuEvent e)
 			{
-				System.out.println("File menu clicked.");
 				if (currentRecordingState != RecordingStates.Disable)
 				{
+					menuBarFileLoadConfiguration.setEnabled(false);
 					menuBarFileSaveConfiguration.setEnabled(false);
 					menuBarFileSaveRecording.setEnabled(iconSelectionNewButton.isEnabled());
 				}
 				
 				else if (currentPlaybackState != PlaybackStates.Disable)
 				{
+					menuBarFileLoadConfiguration.setEnabled(true);
 					menuBarFileSaveRecording.setEnabled(false);
 					menuBarFileSaveConfiguration.setEnabled(iconSelectionNewButton.isEnabled());
 				}
@@ -871,7 +875,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			{
 			}
 		});
-		
+
 		menuBarFileSaveRecording.addActionListener(new ActionListener()
 		{
 			@Override
@@ -894,6 +898,17 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		});
 		
 		fileMenu.add(menuBarFileSaveConfiguration);
+		
+		menuBarFileLoadConfiguration.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				loadConfiguration();
+			}
+		});
+
+		fileMenu.add(menuBarFileLoadConfiguration);
 		
 		menuBarFileExit.addActionListener(new ActionListener()
 		{
@@ -1626,6 +1641,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				// Initialize the file chooser
 				final JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+				fileChooser.setDialogTitle("Save Recording");
 				
 				// Open dialog and wait for user to save.
 				int returnValue = fileChooser.showSaveDialog(this);
@@ -2167,6 +2183,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 				refreshPlaybackQueue();
 				iconSelectionNewButton.setEnabled(!playbackQueueRecordsListModel.isEmpty());
 				playbackQueueAddButton.setEnabled(true);
+				setState(JFrame.NORMAL);
 				break;
 			case Play:
 				if (loadedPlaybackMap == null || loadedPlaybackMap.size() <= 0)
@@ -2217,10 +2234,55 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 		}
 	}
 	
-	private void resetPlaybackOptionsAndQueue(boolean promptUserToSaveConfig)
+	private void loadConfiguration()
 	{
-		System.out.println("Resetting playback options.");
+		// Initialize the file chooser
+		final JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+		fileChooser.setDialogTitle("Load Configuration");
 		
+		// Open dialog and wait for user to choose a file.
+		int returnValue = fileChooser.showOpenDialog(this);
+		
+		// Make sure the user actually chose a file.
+		if (returnValue == JFileChooser.APPROVE_OPTION)
+		{
+			String fileConfigLocation = fileChooser.getSelectedFile().getPath();
+			
+			try
+			{
+				// Try to load the configuration file.
+				ArrayList<PlaybackOptions> importedPlaybackConfig = DataIOHandlerUtils.importPlaybackConfigurationFromFile(fileConfigLocation);
+				
+				// Prompt user to save current playback config and recording file.
+				// Also clear the viewing area.
+				resetPlaybackOptionsAndQueue(true);
+				
+				// Need to load each of the playback options.
+				for(PlaybackOptions options : importedPlaybackConfig)
+				{
+					addPlaybackItemToQueue(options, true);
+				}
+				
+				refreshPlaybackQueue();
+				setRecordingState(RecordingStates.Disable);
+				setPlaybackState(PlaybackStates.Enable);
+			}
+			catch (IllegalArgumentException | IOException ex)
+			{
+				JOptionPane.showMessageDialog(this, "Unable to read from that file.");
+				return;
+			}
+			catch(DataFormatException ex)
+			{
+				JOptionPane.showMessageDialog(this, "The configuration file contains invalid data or it isn't a configuration file.");
+				return;
+			}
+		}
+	}
+	
+	private boolean resetPlaybackOptionsAndQueue(boolean promptUserToSaveConfig)
+	{
 		setRecordingState(RecordingStates.Enable);
 		setPlaybackState(PlaybackStates.Disable);
 		resetRecordingActionsTextArea(true, true, true);
@@ -2233,7 +2295,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
 			refreshPlaybackQueue();
 			refreshPlaybackControls();
-			return;
+			return true;
 		}
 		
 		int userAnswer = JOptionPane.YES_OPTION;
@@ -2254,6 +2316,7 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			// Initialize the file chooser
 			final JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+			fileChooser.setDialogTitle("Save Configuration");
 			
 			// Open dialog and wait for user to save.
 			int returnValue = fileChooser.showSaveDialog(this);
@@ -2269,9 +2332,25 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 					fileSaveLocation += ".txt";
 				}
 				
-				// Save config stuff here.
-				System.out.println("Save config stuff here..");
+				// Saving configuration items here.
+				final LinkedList<String> playbackOptionsExportList = new LinkedList<String>();
+				
+				for(PlaybackOptions options : loadedPlaybackMap.keySet())
+				{
+					playbackOptionsExportList.add(options.toExportableString());
+				}
+				
+				try
+				{
+					DataIOHandlerUtils.exportStringDataToFile(playbackOptionsExportList, fileSaveLocation);
+				}
+				catch (IllegalArgumentException | IOException e)
+				{
+					JOptionPane.showMessageDialog(this, "There was an issue saving the configuration. Check that the file location is writable.");
+				}
 			}
+			else
+				return false;
 			
 			// Remove all items from the queue
 			loadedPlaybackMap = new LinkedHashMap<PlaybackOptions, LoadedRecording>();
@@ -2279,6 +2358,9 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			refreshPlaybackControls();
 			setRecordingState(RecordingStates.Disable);
 			setPlaybackState(PlaybackStates.Enable);
+			showPlaybackControls(new PlaybackOptions(null));
+			
+			return true;
 		}
 		else if (userAnswer == JOptionPane.NO_OPTION)
 		{
@@ -2288,10 +2370,13 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 			refreshPlaybackControls();
 			setRecordingState(RecordingStates.Disable);
 			setPlaybackState(PlaybackStates.Enable);
+			showPlaybackControls(new PlaybackOptions(null));
+			
+			return true;
 		}
 		else 
 		{
-			return;
+			return false;
 		}
 	}
 	
@@ -2307,7 +2392,10 @@ public class MouseRecorderGUI extends JFrame implements WindowListener, Property
 	 *
 	 * @see java.awt.event.WindowListener#windowClosing(java.awt.event.WindowEvent)
 	 */
-	public void windowClosing(WindowEvent e) { /* Do Nothing */ }
+	public void windowClosing(WindowEvent e) { 
+		
+		resetPlaybackOptionsAndQueue(true);
+	}
 
 	/**
 	 * Unimplemented
