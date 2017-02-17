@@ -314,7 +314,7 @@ public class DataIOHandlerUtils
 		{
 			try
 			{
-				String[] splitLine = playbackItemDetails.split(":");
+				String[] splitLine = playbackItemDetails.split("::::");
 			
 				if (!splitLine[0].equals("PLAYBACKITEM"))
 					throw new UnsupportedDataTypeException("Found invalid dataline in file: " + splitLine);
@@ -334,7 +334,7 @@ public class DataIOHandlerUtils
 				generatedOptions.stopPlaybackQueueIfFailsChecked = Boolean.valueOf(splitLine[8]);
 				generatedOptions.runAdditionalScriptIfFailsChecked = Boolean.valueOf(splitLine[9]);
 				
-				if (splitLine[10] != "_")
+				if (!splitLine[10].equals("_"))
 				{
 					generatedOptions.runAdditionalScriptIfFailsFileLocation = splitLine[10];
 					generatedOptions.loadedAdditionalScriptIfFails = new LoadedRecording(splitLine[10]);

@@ -58,7 +58,7 @@ public class PlaybackOptions
 	
 	public String toExportableString()
 	{
-		return String.format("playbackitem:%1$s:%2$s:%3$d:%4$s:%5$d:%6$s:%7$s:%8$s:%9$s:%10$s", 
+		return String.format("PLAYBACKITEM::::%1$s::::%2$s::::%3$d::::%4$s::::%5$d::::%6$s::::%7$s::::%8$s::::%9$s::::%10$s", 
 								recordingFileLocation, 
 								String.valueOf(repeatNumTimesChecked),
 								repeatNumTimesNumericalValue,
