@@ -33,7 +33,6 @@ public class GlobalUserShortcutKeyListener implements NativeKeyListener
 	 */
 	public GlobalUserShortcutKeyListener(PropertyChangeListener propertyListener, ArrayList<Integer[]> keySequencesThatFireEvents) throws IllegalArgumentException
 	{
-		System.out.println("Setting up key listener.");
 		try
 		{
 			if (propertyListener == null)
@@ -46,8 +45,6 @@ public class GlobalUserShortcutKeyListener implements NativeKeyListener
 			setKeySequencesThatFireEvents(keySequencesThatFireEvents);
 			
 			pressedKeys = new ArrayList<>();
-			
-			System.out.println("All setup.");
 		}
 		catch(IllegalArgumentException ex)
 		{
