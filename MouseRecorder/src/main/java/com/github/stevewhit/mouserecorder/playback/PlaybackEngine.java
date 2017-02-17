@@ -36,6 +36,7 @@ public class PlaybackEngine
 	/**
 	 * A list of user input actions without mouse wait statements between each action.
 	 */
+	@SuppressWarnings("unused")
 	private Queue<AbstractInputAction> loadedRecordingWithoutWaits; 
 	
 	/**
